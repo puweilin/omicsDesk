@@ -25,7 +25,9 @@ Sys.setenv(http_proxy = dead, https_proxy = dead, HTTP_PROXY = dead, HTTPS_PROXY
 rscript <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
 
 message("Installing ", basename(bundle_dir), " into ", lib, " with the network blackholed")
-status <- system2(rscript, c(shQuote(file.path(bundle_dir, "INSTALL.R")), "--lib", shQuote(lib), "--force"))
+# --no-init-file: a user .Rprofile that loads packages (lintr, say) would
+# otherwise show up as packages loaded from outside the bundle library.
+status <- system2(rscript, c("--no-init-file", shQuote(file.path(bundle_dir, "INSTALL.R")), "--lib", shQuote(lib), "--force"))
 if (!identical(status, 0L)) stop("INSTALL.R failed with status ", status)
 
 check <- sprintf('
@@ -36,11 +38,19 @@ base <- rownames(installed.packages(priority = "base"))
 loaded <- setdiff(loadedNamespaces(), base)
 from <- vapply(loaded, function(ns) normalizePath(dirname(getNamespaceInfo(ns, "path"))), character(1))
 leaked <- loaded[from != normalizePath(lib)]
-if (length(leaked)) cat("LEAKED (loaded from outside the bundle library):", paste(leaked, collapse = ", "), "\n")
-ok <- all(d$ok[d$required]) && length(leaked) == 0L
+# A package loaded from outside the bundle library is a defect only when
+# something hard-depends on it. scales, for one, loads dichromat when it
+# happens to be installed (a Suggest); a user without it loses nothing.
+hard <- unique(unlist(tools::package_dependencies(loaded, db = installed.packages(),
+  which = c("Depends", "Imports", "LinkingTo"), recursive = FALSE)))
+leaked_hard <- leaked[leaked %%in%% hard]
+leaked_soft <- setdiff(leaked, leaked_hard)
+if (length(leaked_soft)) cat("Optional packages the build machine had and the bundle does not (fine):", paste(leaked_soft, collapse = ", "), "\n")
+if (length(leaked_hard)) cat("LEAKED (hard dependencies loaded from outside the bundle library):", paste(leaked_hard, collapse = ", "), "\n")
+ok <- all(d$ok[d$required]) && length(leaked_hard) == 0L
 cat(if (ok) "BUNDLE OK\n" else "BUNDLE INCOMPLETE\n")
 quit(status = if (ok) 0L else 1L)
 ', deparse(lib))
-status <- system2(rscript, c("-e", shQuote(check)))
+status <- system2(rscript, c("--no-init-file", "-e", shQuote(check)))
 if (!keep) unlink(c(lib, home), recursive = TRUE)
 quit(status = status)
