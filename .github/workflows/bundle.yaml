@@ -1,0 +1,69 @@
+# Build one offline bundle per platform and prove each installs and runs
+# with the network blackholed. Triggered by a version tag (v0.1.0) or by
+# hand. The zips are uploaded as workflow artifacts, and attached to the
+# release when the run is for a tag.
+#
+# One bundle serves exactly one R minor version, the one r-lib installs
+# as "release" on the day of the build. Bioconductor keeps binaries only
+# for its current and previous release, so a bundle cannot be rebuilt
+# for an old R later: keep the artifacts.
+name: bundle
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  bundle:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, macos-13, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: puweilin/omicsApp
+          path: _deps/omicsApp
+          token: ${{ secrets.OMICSAPP_READ_TOKEN }}
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+
+      - name: Tools the builder needs
+        run: Rscript -e 'install.packages(c("pak", "jsonlite", "rmarkdown", "BiocManager"))'
+
+      - name: Build the bundle
+        run: Rscript tools/build_bundle.R --omicsapp _deps/omicsApp --out dist
+
+      - name: Verify it installs and runs offline
+        run: |
+          Rscript -e '
+            dirs <- list.dirs("dist", recursive = FALSE)
+            dirs <- dirs[grepl("^omicsDesk-", basename(dirs))]
+            stopifnot(length(dirs) == 1)
+            status <- system2(file.path(R.home("bin"), "Rscript"), c("tools/verify_bundle.R", shQuote(dirs)))
+            quit(status = status)
+          '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-${{ matrix.os }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: dist/*.zip

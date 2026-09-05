@@ -1,0 +1,70 @@
+# R CMD check for omicsDesk.
+#
+# omicsCore and omicsApp are not on CRAN and cannot be resolved by pak
+# from GitHub (omicsApp's DESCRIPTION points at omicsCore with a local::
+# Remote), so they are installed from a checkout of the monorepo, in the
+# same two steps the monorepo's own workflow uses. The checkout needs a
+# token that can read puweilin/omicsApp: a fine-grained PAT with
+# "Contents: read" on that repository, stored as OMICSAPP_READ_TOKEN.
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      _R_CHECK_FORCE_SUGGESTS_: false
+      _R_CHECK_CRAN_INCOMING_: false
+      NOT_CRAN: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: puweilin/omicsApp
+          path: _deps/omicsApp
+          token: ${{ secrets.OMICSAPP_READ_TOKEN }}
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+
+      # 1. omicsCore's dependencies, then omicsApp's plus omicsCore itself.
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: _deps/omicsApp/packages/omicsCore
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: _deps/omicsApp/packages/omicsApp
+          extra-packages: local::../omicsCore
+
+      - name: Install omicsApp
+        run: R CMD INSTALL _deps/omicsApp/packages/omicsApp
+
+      # 2. Everything omicsDesk adds: the engines omicsCore only Suggests.
+      - name: Install omicsDesk dependencies
+        run: |
+          Rscript -e '
+            d <- read.dcf("DESCRIPTION")
+            take <- function(f) { s <- d[1, f]; if (is.na(s)) return(character()); trimws(sub("\\(.*\\)", "", trimws(strsplit(s, ",")[[1]]))) }
+            pkgs <- setdiff(unique(c(take("Imports"), take("Suggests"))), c("omicsCore", "omicsApp", ""))
+            pak::pkg_install(c(pkgs, "any::rcmdcheck"))
+          '
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          args: 'c("--no-manual", "--as-cran")'
