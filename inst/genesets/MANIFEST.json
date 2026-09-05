@@ -1,0 +1,151 @@
+{
+  "built_at": "2026-09-05T08:01:27Z",
+  "msigdbr_version": "25.1.1",
+  "msigdb_release": "2025.1",
+  "organisms": ["Homo sapiens", "Mus musculus"],
+  "databases": ["hallmark", "kegg", "reactome", "wikipathways", "go_bp", "go_mf", "go_cc"],
+  "columns": ["gs_name", "gene_symbol", "gs_description", "gs_id", "gs_source"],
+  "license": "MSigDB gene sets, redistributed as msigdbr does, under MSigDB's terms (https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp). The kegg table is MSigDB's frozen CP:KEGG_LEGACY collection, not the live KEGG database; tables fetched from the KEGG REST API are for local use only and are never shipped.",
+  "files": [
+    {
+      "file": "hallmark__Homo_sapiens.qs2",
+      "database": "hallmark",
+      "organism": "Homo sapiens",
+      "n_sets": 50,
+      "n_rows": 7333,
+      "bytes": 32098,
+      "md5": "5173fae238ab1c845eec81147347cda7",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "kegg__Homo_sapiens.qs2",
+      "database": "kegg",
+      "organism": "Homo sapiens",
+      "n_sets": 186,
+      "n_rows": 12904,
+      "bytes": 42895,
+      "md5": "825b095304ac4254263dfbff6d6f0a63",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "reactome__Homo_sapiens.qs2",
+      "database": "reactome",
+      "organism": "Homo sapiens",
+      "n_sets": 1787,
+      "n_rows": 108275,
+      "bytes": 314014,
+      "md5": "21390fa9b00f1942d8a33ba1d3e180de",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "wikipathways__Homo_sapiens.qs2",
+      "database": "wikipathways",
+      "organism": "Homo sapiens",
+      "n_sets": 885,
+      "n_rows": 40070,
+      "bytes": 174731,
+      "md5": "4baa1d97652aa0a2c14d4d37688cbad4",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "go_bp__Homo_sapiens.qs2",
+      "database": "go_bp",
+      "organism": "Homo sapiens",
+      "n_sets": 7583,
+      "n_rows": 617648,
+      "bytes": 2536422,
+      "md5": "4e886f60bf9cb8d14e6c651603566b59",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "go_mf__Homo_sapiens.qs2",
+      "database": "go_mf",
+      "organism": "Homo sapiens",
+      "n_sets": 1855,
+      "n_rows": 113119,
+      "bytes": 459767,
+      "md5": "288abdcad5638ee1bb995ebe8b5937de",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "go_cc__Homo_sapiens.qs2",
+      "database": "go_cc",
+      "organism": "Homo sapiens",
+      "n_sets": 1042,
+      "n_rows": 103371,
+      "bytes": 440029,
+      "md5": "7f7d07363534cf5b77b8f8b324cfc323",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "hallmark__Mus_musculus.qs2",
+      "database": "hallmark",
+      "organism": "Mus musculus",
+      "n_sets": 50,
+      "n_rows": 7379,
+      "bytes": 33101,
+      "md5": "90c5d108c867a8f1dbaeb07c11ab2278",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "kegg__Mus_musculus.qs2",
+      "database": "kegg",
+      "organism": "Mus musculus",
+      "n_sets": 186,
+      "n_rows": 13764,
+      "bytes": 44548,
+      "md5": "eb61d76de92ed5d2cde452e9ffd7bf77",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "reactome__Mus_musculus.qs2",
+      "database": "reactome",
+      "organism": "Mus musculus",
+      "n_sets": 1787,
+      "n_rows": 100969,
+      "bytes": 305385,
+      "md5": "4c4c931ace01a9a536313d70cc7976cd",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "wikipathways__Mus_musculus.qs2",
+      "database": "wikipathways",
+      "organism": "Mus musculus",
+      "n_sets": 885,
+      "n_rows": 40216,
+      "bytes": 173883,
+      "md5": "a31948222ff623da34fd7a34a6df5902",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "go_bp__Mus_musculus.qs2",
+      "database": "go_bp",
+      "organism": "Mus musculus",
+      "n_sets": 7580,
+      "n_rows": 600004,
+      "bytes": 2459940,
+      "md5": "a5f92ba443c31fa39dab7c56b6f8ea76",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "go_mf__Mus_musculus.qs2",
+      "database": "go_mf",
+      "organism": "Mus musculus",
+      "n_sets": 1852,
+      "n_rows": 110429,
+      "bytes": 450915,
+      "md5": "1da355e30cd9e12852118b515da09425",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    },
+    {
+      "file": "go_cc__Mus_musculus.qs2",
+      "database": "go_cc",
+      "organism": "Mus musculus",
+      "n_sets": 1042,
+      "n_rows": 101369,
+      "bytes": 437379,
+      "md5": "a9b62d7a4e5456f88beee2dd73668f47",
+      "gs_source": "MSigDB msigdbr 25.1.1"
+    }
+  ]
+}
