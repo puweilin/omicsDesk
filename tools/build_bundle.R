@@ -7,10 +7,12 @@
 # Windows is built on Windows, because R's binary package layout and the
 # repositories' binary availability are both decided by the running R.
 #
-#   Rscript tools/build_bundle.R [--omicsapp <dir>] [--out <dir>]
+#   Rscript tools/build_bundle.R [--omicsapp <dir> | --omicsapp-ref <ref>] [--out <dir>]
 #                                [--pandoc <exe>] [--reuse-downloads] [--no-zip]
 #
-# --omicsapp   checkout of the omicsApp monorepo (default ../omicsApp)
+# --omicsapp      checkout of the omicsApp monorepo (default ../omicsApp when it exists)
+# --omicsapp-ref  fetch the monorepo from GitHub at this branch, tag or commit
+#                 instead (default main when there is no local checkout)
 # --out        output directory (default dist/)
 # --pandoc     pandoc executable to ship; default: the one rmarkdown finds
 # --reuse-downloads  skip pak if the download cache for this target exists
@@ -35,11 +37,65 @@ has_flag <- function(flag) flag %in% args
 script_path <- sub("^--file=", "", grep("^--file=", commandArgs(), value = TRUE))
 root <- if (length(script_path)) normalizePath(file.path(dirname(script_path[[1L]]), "..")) else normalizePath(".")
 
-omicsapp_dir <- normalizePath(get_arg("--omicsapp", file.path(root, "..", "omicsApp")), mustWork = FALSE)
 out_dir <- get_arg("--out", file.path(root, "dist"))
 pandoc_arg <- get_arg("--pandoc", NULL)
 
 if (!requireNamespace("pak", quietly = TRUE)) stop("pak is needed: install.packages('pak')")
+
+# ---- where omicsCore and omicsApp come from -----------------------------------
+#
+# A local checkout when there is one (the developer's, or CI's), otherwise
+# GitHub at a ref. Either way the commit is recorded in BUNDLE, because a
+# bundle that cannot say which omicsCore it holds cannot be reproduced.
+
+OMICSAPP_REPO <- "https://github.com/puweilin/omicsApp"
+
+fetch_omicsapp <- function(ref, into) {
+  unlink(into, recursive = TRUE)
+  dir.create(into, recursive = TRUE)
+  tarball <- file.path(into, "omicsApp.tar.gz")
+  utils::download.file(sprintf("%s/archive/%s.tar.gz", OMICSAPP_REPO, ref), tarball,
+                       mode = "wb", quiet = TRUE)
+  top <- unique(sub("/.*$", "", utils::untar(tarball, list = TRUE)))
+  top <- top[nzchar(top)][[1L]]
+  utils::untar(tarball, exdir = into)
+  file.path(into, top)
+}
+
+github_sha <- function(ref) {
+  tryCatch(jsonlite::fromJSON(sprintf("https://api.github.com/repos/puweilin/omicsApp/commits/%s", ref))$sha,
+           error = function(e) "")
+}
+
+local_sha <- function(dir) {
+  sha <- tryCatch(suppressWarnings(system2("git", c("-C", shQuote(dir), "rev-parse", "HEAD"),
+                                           stdout = TRUE, stderr = FALSE))[[1L]],
+                  error = function(e) "")
+  if (!grepl("^[0-9a-f]{40}$", sha)) return("")
+  dirty <- tryCatch(suppressWarnings(system2("git", c("-C", shQuote(dir), "status", "--porcelain", "--", "packages"),
+                                             stdout = TRUE, stderr = FALSE)),
+                    error = function(e) character())
+  if (length(dirty) > 0L) paste(sha, "(with uncommitted changes)") else sha
+}
+
+omicsapp_arg <- get_arg("--omicsapp", NULL)
+omicsapp_ref <- get_arg("--omicsapp-ref", NULL)
+if (!is.null(omicsapp_arg) && !is.null(omicsapp_ref)) stop("Pass --omicsapp or --omicsapp-ref, not both.")
+if (is.null(omicsapp_arg) && is.null(omicsapp_ref)) {
+  default_dir <- file.path(root, "..", "omicsApp")
+  if (dir.exists(default_dir)) omicsapp_arg <- default_dir else omicsapp_ref <- "main"
+}
+if (!is.null(omicsapp_arg)) {
+  omicsapp_dir <- normalizePath(omicsapp_arg, mustWork = FALSE)
+  omicsapp_source <- paste0("local checkout ", omicsapp_dir)
+  omicsapp_sha <- local_sha(omicsapp_dir)
+} else {
+  message("Fetching omicsApp@", omicsapp_ref, " from GitHub")
+  omicsapp_dir <- fetch_omicsapp(omicsapp_ref, file.path(out_dir, "omicsApp-src"))
+  omicsapp_source <- paste0(OMICSAPP_REPO, " @ ", omicsapp_ref)
+  omicsapp_sha <- github_sha(omicsapp_ref)
+}
+message("  omicsApp from ", omicsapp_source, if (nzchar(omicsapp_sha)) paste0(" (", omicsapp_sha, ")") else "")
 
 pkg_dirs <- c(
   omicsCore = file.path(omicsapp_dir, "packages", "omicsCore"),
@@ -229,6 +285,8 @@ record <- rbind(c(
   RMinor = r_minor,
   BiocVersion = if (requireNamespace("BiocManager", quietly = TRUE)) as.character(BiocManager::version()) else "",
   GitSha = if (is.na(git_sha) || !grepl("^[0-9a-f]{40}$", git_sha)) "" else git_sha,
+  OmicsAppSource = omicsapp_source,
+  OmicsAppSha = omicsapp_sha,
   Pandoc = pandoc_version,
   Genesets = if (is.null(genesets)) "" else sprintf("MSigDB %s via msigdbr %s, built %s", genesets$msigdb_release, genesets$msigdbr_version, genesets$built_at),
   Packages = paste(sprintf("%s (%s)", all_pkgs$Package, all_pkgs$Version), collapse = ", "),

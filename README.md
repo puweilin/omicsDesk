@@ -75,8 +75,12 @@ monorepo beside this one:
 ```sh
 Rscript tools/prewarm_genesets.R                     # once per MSigDB release
 Rscript tools/build_bundle.R --omicsapp ../omicsApp  # -> dist/omicsDesk-<ver>-R<minor>-<platform>/ and .zip
+Rscript tools/build_bundle.R --omicsapp-ref main     # the same, with omicsApp fetched from GitHub at that ref
 Rscript tools/verify_bundle.R dist/omicsDesk-<...>   # installs it into a throwaway library with the network blackholed
 ```
+
+Every bundle's `BUNDLE` file records the omicsApp commit it was built
+from, so a bundle can always say which omicsCore and omicsApp it holds.
 
 A bundle is built for the platform and R minor version the script runs
 under; the `bundle` workflow builds Windows, macOS (arm64 and x86_64)
@@ -94,8 +98,7 @@ devtools::install_local("../omicsApp/packages/omicsApp")
 devtools::install_local(".")
 ```
 
-Or, with a GitHub token that can read both private repositories in
-`GITHUB_PAT`, let pak follow the `Remotes` fields:
+Or let pak follow the `Remotes` fields and install all three from GitHub:
 
 ```r
 pak::pak("puweilin/omicsDesk")
@@ -110,8 +113,20 @@ Rscript -e 'devtools::test()'
 The suite covers the environment `launch()` sets, the copy-and-never-
 overwrite rule for gene-set tables, import and export, `doctor()` with
 engines mocked away, and `install_offline()` against a real one-package
-bundle built during the test. CI needs one secret, `OMICSAPP_READ_TOKEN`,
-a fine-grained PAT that can read the (private) omicsApp repository.
+bundle built during the test. CI checks out the omicsApp monorepo beside
+this one; both repositories are public, so no secret is involved.
+
+## Gene sets and licences
+
+`inst/genesets` holds MSigDB collections for human and mouse (Hallmark,
+Reactome, WikiPathways, GO BP/MF/CC, and the frozen `KEGG_LEGACY` set),
+taken from the `msigdbr` package and redistributed as it does, under
+[MSigDB's licence terms](https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp).
+`inst/genesets/MANIFEST.json` records the MSigDB release and msigdbr
+version they came from. Tables fetched live from the KEGG REST API by
+`omicsCore::refresh_geneset_cache()` are for local use only under KEGG's
+licence: they are never part of this package or a bundle, and
+`export_geneset_cache()` leaves them out unless told otherwise.
 
 ## 中文快速开始
 

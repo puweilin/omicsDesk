@@ -3,10 +3,8 @@
 # omicsCore and omicsApp are not on CRAN. pak could resolve them from
 # GitHub through the Remotes fields, but the bundle workflow needs a
 # checkout of the monorepo anyway, so both workflows install them from
-# one, in the same two steps the monorepo's own workflow uses. The
-# checkout needs a token that can read puweilin/omicsApp: a fine-grained
-# PAT with "Contents: read" on that repository, stored as
-# OMICSAPP_READ_TOKEN.
+# one, in the same two steps the monorepo's own workflow uses. Both
+# repositories are public, so the checkout needs no token.
 name: R-CMD-check
 
 on:
@@ -33,7 +31,6 @@ jobs:
         with:
           repository: puweilin/omicsApp
           path: _deps/omicsApp
-          token: ${{ secrets.OMICSAPP_READ_TOKEN }}
 
       - uses: r-lib/actions/setup-pandoc@v2
 

@@ -32,7 +32,6 @@ jobs:
         with:
           repository: puweilin/omicsApp
           path: _deps/omicsApp
-          token: ${{ secrets.OMICSAPP_READ_TOKEN }}
 
       - uses: r-lib/actions/setup-pandoc@v2
 

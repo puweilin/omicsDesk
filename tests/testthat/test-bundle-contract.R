@@ -50,7 +50,7 @@ test_that("the builder ships the files the installer and launchers expect", {
     expect_true(any(grepl(f, builder, fixed = TRUE)), info = f)
     expect_true(nzchar(bundle_file(f)), info = f)
   }
-  for (field in c("RMinor", "Packages", "SourceOnly", "Pandoc", "Genesets")) {
+  for (field in c("RMinor", "Packages", "SourceOnly", "Pandoc", "Genesets", "OmicsAppSha")) {
     expect_true(any(grepl(paste0(field, " = "), builder, fixed = TRUE)), info = field)
   }
 })
