@@ -46,8 +46,8 @@ Imports:
     vsn,
     writexl
 Remotes:
-    puweilin/omicsApp/packages/omicsCore,
-    puweilin/omicsApp/packages/omicsApp
+    omicsCore=puweilin/omicsApp/packages/omicsCore,
+    omicsApp=puweilin/omicsApp/packages/omicsApp
 Suggests:
     testthat (>= 3.0.0),
     withr,

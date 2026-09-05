@@ -1,11 +1,12 @@
 # R CMD check for omicsDesk.
 #
-# omicsCore and omicsApp are not on CRAN and cannot be resolved by pak
-# from GitHub (omicsApp's DESCRIPTION points at omicsCore with a local::
-# Remote), so they are installed from a checkout of the monorepo, in the
-# same two steps the monorepo's own workflow uses. The checkout needs a
-# token that can read puweilin/omicsApp: a fine-grained PAT with
-# "Contents: read" on that repository, stored as OMICSAPP_READ_TOKEN.
+# omicsCore and omicsApp are not on CRAN. pak could resolve them from
+# GitHub through the Remotes fields, but the bundle workflow needs a
+# checkout of the monorepo anyway, so both workflows install them from
+# one, in the same two steps the monorepo's own workflow uses. The
+# checkout needs a token that can read puweilin/omicsApp: a fine-grained
+# PAT with "Contents: read" on that repository, stored as
+# OMICSAPP_READ_TOKEN.
 name: R-CMD-check
 
 on:

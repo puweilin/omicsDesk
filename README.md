@@ -94,10 +94,12 @@ devtools::install_local("../omicsApp/packages/omicsApp")
 devtools::install_local(".")
 ```
 
-`pak::pak("puweilin/omicsDesk")` does not work yet: omicsApp's
-`DESCRIPTION` points at omicsCore with a `local::` Remote that only
-resolves inside the monorepo. Changing it to
-`puweilin/omicsApp/packages/omicsCore` there would fix this.
+Or, with a GitHub token that can read both private repositories in
+`GITHUB_PAT`, let pak follow the `Remotes` fields:
+
+```r
+pak::pak("puweilin/omicsDesk")
+```
 
 ### Tests and CI
 
