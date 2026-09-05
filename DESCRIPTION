@@ -1,0 +1,58 @@
+Package: omicsDesk
+Title: Offline, Single-Machine Edition of omicsApp
+Version: 0.0.0.9000
+Authors@R:
+    person("Weilin", "Pu", email = "puweilin@gmail.com", role = c("aut", "cre"))
+Description: Runs the omicsApp multi-omics analysis interface on one machine
+    with no network access. Every analysis backend the app can call is a hard
+    dependency rather than an optional one, the MSigDB gene-set tables are
+    shipped with the package so enrichment never needs to download anything,
+    and launch() puts projects, gene sets and reports in one visible folder
+    that survives between sessions. Ships the tooling that builds an
+    installable offline bundle (a local CRAN-style repository of binaries
+    plus an installer) for a given platform and R version.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 4.2)
+Imports:
+    omicsApp,
+    omicsCore,
+    ActivePathways,
+    circlize,
+    clusterProfiler,
+    ComplexHeatmap,
+    DESeq2,
+    edgeR,
+    enrichplot,
+    fgsea,
+    future,
+    ggrepel,
+    GSVA,
+    impute,
+    imputeLCMD,
+    jsonlite,
+    knitr,
+    limma,
+    msigdbr,
+    openxlsx,
+    pcaMethods,
+    plotly,
+    qs2,
+    readxl,
+    rmarkdown,
+    vsn,
+    writexl
+Remotes:
+    puweilin/omicsApp/packages/omicsCore,
+    puweilin/omicsApp/packages/omicsApp
+Suggests:
+    testthat (>= 3.0.0),
+    withr,
+    callr,
+    pak
+Config/testthat/edition: 3
+URL: https://github.com/puweilin/omicsDesk
+BugReports: https://github.com/puweilin/omicsDesk/issues

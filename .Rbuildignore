@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^README\.Rmd$
+^\.github$
+^\.DS_Store$
+^docs$
+^tools$
+^dist$
+^_deps$
+^CLAUDE\.md$

@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+*.Rcheck/
+/dist/
+/_deps/
+/inst/pandoc/
+/inst/doc/
+/docs/_site/
+/*.tar.gz
