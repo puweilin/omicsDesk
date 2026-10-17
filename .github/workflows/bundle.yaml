@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, macos-13, ubuntu-latest]
+        os: [windows-latest, macos-latest, macos-15-intel, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -28,9 +28,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Read pinned omicsApp revision
+        id: upstream
+        shell: bash
+        run: |
+          pinned_ref="$(sed -n 's/^Config\/omicsDesk\/UpstreamRef:[[:space:]]*//p' DESCRIPTION)"
+          test -n "$pinned_ref"
+          printf 'ref=%s\n' "$pinned_ref" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
         with:
           repository: puweilin/omicsApp
+          ref: ${{ steps.upstream.outputs.ref }}
           path: _deps/omicsApp
 
       - uses: r-lib/actions/setup-pandoc@v2
@@ -49,12 +58,17 @@ jobs:
       - name: Verify it installs and runs offline
         run: |
           Rscript -e '
-            dirs <- list.dirs("dist", recursive = FALSE)
-            dirs <- dirs[grepl("^omicsDesk-", basename(dirs))]
-            stopifnot(length(dirs) == 1)
-            status <- system2(file.path(R.home("bin"), "Rscript"), c("tools/verify_bundle.R", shQuote(dirs)))
+            zips <- list.files("dist", pattern = "^omicsDesk-.*[.]zip$", full.names = TRUE)
+            stopifnot(length(zips) == 1)
+            status <- system2(file.path(R.home("bin"), "Rscript"), c("tools/verify_bundle.R", shQuote(zips), "--output", "verification-evidence"))
             quit(status = status)
           '
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification-${{ matrix.os }}
+          path: verification-evidence/
 
       - uses: actions/upload-artifact@v4
         with:

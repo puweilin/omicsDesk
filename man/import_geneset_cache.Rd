@@ -13,9 +13,8 @@ import_geneset_cache(path, quiet = FALSE)
 }
 \value{
 A \code{data.frame} with one row per imported file: \code{file},
-\code{database}, \code{organism}, \code{n_sets}, \code{gs_source}. Restart the app (or
-the R session) afterwards: omicsCore memoises tables it has already
-read.
+\code{database}, \code{organism}, \code{n_sets}, \code{gs_source}. Current omicsCore
+invalidates its memory cache when a table's contents change.
 }
 \description{
 The way a refreshed table reaches an offline machine: a colleague with

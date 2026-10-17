@@ -21,8 +21,9 @@
 #' @param port Port for the local server; `NULL` lets Shiny pick one.
 #' @param browser Open the default browser. Default `interactive()`;
 #'   the bundle's launchers pass `TRUE`.
-#' @param workers Background R processes for long analyses, as in
-#'   [omicsApp::launch()].
+#' @param workers Number of independent background R processes for long
+#'   analyses (default 2). Desktop mode uses `future::multisession`,
+#'   including on macOS. `0` preserves the caller's future plan.
 #' @param online Set `TRUE` on a networked machine to allow the KEGG
 #'   auto-refresh and live `refresh_geneset_cache()` calls.
 #' @param quiet Skip the one-line banner.
@@ -43,13 +44,24 @@ launch <- function(project = NULL,
                    online = FALSE,
                    quiet = FALSE,
                    ...) {
+  assert_path(project, "project", allow_null = TRUE)
+  assert_path(data_dir, "data_dir", allow_null = TRUE)
+  assert_flag(browser, "browser")
+  assert_flag(online, "online")
+  assert_flag(quiet, "quiet")
+  assert_workers(workers)
   env <- desk_env(data_dir = data_dir, online = online)
   ensure_dir(env[["OMICSAPP_DATA_DIR"]])
   with_envvar(env, {
     refresh_pandoc_lookup()
+    on.exit(refresh_pandoc_lookup(), add = TRUE)
     if (!quiet) launch_banner(env)
+    if (workers > 0L) {
+      previous <- future::plan(future::multisession, workers = I(as.integer(workers)))
+      on.exit(future::plan(previous), add = TRUE)
+    }
     run_app(project = project, port = port, launch.browser = browser,
-            workers = workers, ...)
+            workers = 0L, ...)
   })
   invisible(NULL)
 }
@@ -57,10 +69,11 @@ launch <- function(project = NULL,
 # The environment launch() runs the app under. Separated from launch() so
 # a test can check it without starting a server.
 desk_env <- function(data_dir = NULL, online = FALSE) {
-  sync_geneset_cache(quiet = TRUE)
+  cache_dir <- path.expand(env_or("OMICSCORE_GENESET_CACHE", desk_geneset_dir()))
+  sync_geneset_cache(target = cache_dir, quiet = TRUE)
   env <- c(
     OMICSAPP_DATA_DIR = data_dir %||% env_or("OMICSAPP_DATA_DIR", desk_data_dir()),
-    OMICSCORE_GENESET_CACHE = env_or("OMICSCORE_GENESET_CACHE", desk_geneset_dir())
+    OMICSCORE_GENESET_CACHE = cache_dir
   )
   if (!isTRUE(online)) {
     env <- c(env, OMICSCORE_GENESET_TTL_DAYS = "0", OMICSCORE_OFFLINE = "1")
@@ -99,7 +112,7 @@ launch_banner <- function(env) {
     "\n  projects:  ", env[["OMICSAPP_DATA_DIR"]],
     "\n  gene sets: ", geneset_vintage(env[["OMICSCORE_GENESET_CACHE"]]) %||% "none",
     "\n  reports:   ", pandoc,
-    if (!is.na(env["OMICSCORE_OFFLINE"])) "\n  mode:      offline" else "\n  mode:      online"
+    if (identical(unname(env["OMICSCORE_OFFLINE"]), "1")) "\n  mode:      offline" else "\n  mode:      online"
   )
 }
 

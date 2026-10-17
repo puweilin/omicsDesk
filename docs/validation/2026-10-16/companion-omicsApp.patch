@@ -1,0 +1,426 @@
+diff --git a/packages/omicsApp/R/mod_diff_view.R b/packages/omicsApp/R/mod_diff_view.R
+index 323980d..4f01574 100644
+--- a/packages/omicsApp/R/mod_diff_view.R
++++ b/packages/omicsApp/R/mod_diff_view.R
+@@ -45,6 +45,19 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+                              activation = shiny::reactiveVal(0L)) {
+   shiny::moduleServer(id, function(input, output, session) {
+ 
++    # A restored result can arrive before the browser binds its layer
++    # dropdown. Keep that handshake separate from a user changing layers.
++    restoring_layer <- shiny::reactiveVal(NULL)
++    diff_bundle <- shiny::reactiveVal(NULL)
++    diff_error <- shiny::reactiveVal(NULL)
++    restored_params <- shiny::reactive({
++      b <- diff_bundle()
++      if (is.null(b$provenance_binding)) return(list())
++      tag <- restoring_layer() %||% input$layer
++      if (!is.null(tag) && !identical(names(b$provenance_binding$inputs), tag)) return(list())
++      b$params %||% list()
++    })
++
+     # Active experiment: whichever layer the user picked, else
+     # proteomics, else the first of any kind.
+     #
+@@ -67,7 +80,7 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+       if (length(exps) == 0L) {
+         return(list(input = NULL, tag = NULL, is_demo = TRUE))
+       }
+-      want <- input$layer
++      want <- restoring_layer() %||% input$layer
+       tag <- if (!is.null(want) && want %in% names(exps)) {
+         want
+       } else {
+@@ -92,7 +105,7 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+       # writes it. Reading it here closed the loop: re-rendering the
+       # control re-sent its value, which invalidated active(), which
+       # re-rendered the control.
+-      sel <- shiny::isolate(input$layer)
++      sel <- restoring_layer() %||% shiny::isolate(input$layer)
+       if (is.null(sel) || !sel %in% tags_avail) {
+         sel <- default_layer_tag(proj$experiments)
+       }
+@@ -112,8 +125,12 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+       a <- active()
+       inp <- a$input
+       choices <- omicsCore::applicable_diff_methods(inp)
++      selected <- if (!is.null(restoring_layer())) restored_params()$method else shiny::isolate(input$method)
++      selected <- selected %||% restored_params()$method %||% "auto"
++      if (!is.character(selected) || length(selected) != 1L || is.na(selected) ||
++          !selected %in% choices) selected <- "auto"
+       shiny::selectInput(session$ns("method"), label = NULL,
+-                         choices = choices, selected = "auto")
++                         choices = choices, selected = selected)
+     })
+ 
+     output$method_note <- shiny::renderUI({
+@@ -215,7 +232,8 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+       # layer or the project changes, and re-rendering with the default
+       # threw away their choice -- they selected condition / G1 / G2,
+       # ran it, and the control came back reading `label`.
+-      sel <- shiny::isolate(input$group_col)
++      sel <- if (!is.null(restoring_layer())) restored_params()$group_col else shiny::isolate(input$group_col)
++      sel <- sel %||% restored_params()$group_col
+       if (is.null(sel) || !sel %in% d$candidates) sel <- d$group_col
+       shiny::selectInput(session$ns("group_col"),
+                          label    = "Group column",
+@@ -254,7 +272,8 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+     levels_ <- shiny::reactive({
+       a <- active()
+       meta <- a$input$meta_df
+-      gc <- input$group_col %||% default_contrast()$group_col
++      gc <- if (!is.null(restoring_layer())) restored_params()$group_col else input$group_col
++      gc <- gc %||% restored_params()$group_col %||% default_contrast()$group_col
+       if (is.null(gc) || !(gc %in% names(meta))) return(character(0))
+       sort(unique(as.character(stats::na.omit(meta[[gc]]))))
+     })
+@@ -271,17 +290,18 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+           "Pick a group column with at least two levels."
+         ))
+       }
+-      keep <- function(current, fallback) {
+-        current <- shiny::isolate(current)
++      keep <- function(current, saved, fallback) {
++        current <- if (!is.null(restoring_layer())) saved else shiny::isolate(current)
++        current <- current %||% saved
+         if (is.null(current) || !current %in% lv) fallback else current
+       }
+       htmltools::tagList(
+         shiny::selectInput(session$ns("control"),
+                            label = "Control", choices = lv,
+-                           selected = keep(input$control, lv[1L])),
++                           selected = keep(input$control, restored_params()$control_group, lv[1L])),
+         shiny::selectInput(session$ns("case"),
+                            label = "Case", choices = lv,
+-                           selected = keep(input$case, lv[min(2L, length(lv))]))
++                           selected = keep(input$case, restored_params()$case_group, lv[min(2L, length(lv))]))
+       )
+     })
+ 
+@@ -289,7 +309,8 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+     # dropdown may say "auto", and auto resolves to something specific.
+     resolved_method <- shiny::reactive({
+       a <- active()
+-      m <- input$method %||% "auto"
++      m <- if (!is.null(restoring_layer())) restored_params()$method else input$method
++      m <- m %||% restored_params()$method %||% "auto"
+       if (!identical(m, "auto") || is.null(a$input)) return(m)
+       # applicable_diff_methods() puts auto first; the one after it is what
+       # auto would pick for this layer.
+@@ -312,12 +333,16 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+       meta <- a$input$meta_df
+       gc <- input$group_col %||% ""
+       cands <- setdiff(names(meta), c(gc, "sample_id"))
++      chosen <- shiny::isolate(input$covariates)
++      if (!is.null(restoring_layer()) || !"covariates" %in% shiny::isolate(names(input))) {
++        chosen <- restored_params()$covariates
++      }
+       shiny::selectizeInput(
+         session$ns("covariates"),
+         label    = NULL,
+         choices  = cands,
+         multiple = TRUE,
+-        selected = NULL,
++        selected = intersect(chosen %||% character(0), cands),
+         options  = list(placeholder = "optional, e.g. age")
+       )
+     })
+@@ -327,13 +352,11 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+     # mount when a real project is present, so the user lands on
+     # a populated volcano without a Re-run click. After that,
+     # changes only take effect on Re-run.
+-    diff_bundle <- shiny::reactiveVal(NULL)
+-    diff_error  <- shiny::reactiveVal(NULL)
+-
+     # The layer this result was computed on has been replaced, so the
+     # result is no longer about anything in the project. NULL is the
+     # module's own start-up state, so this only rewinds it.
+     shiny::observeEvent(invalidate(), {
++      restoring_layer(NULL)
+       diff_bundle(NULL)
+       diff_error(NULL)
+     }, ignoreInit = TRUE)
+@@ -355,6 +378,9 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+       if (!omicsCore::result_inputs_current(saved$provenance_binding, proj)) return()
+       diff_error(NULL)
+       diff_bundle(saved)
++      tag <- names(saved$provenance_binding$inputs)[[1L]]
++      restoring_layer(tag)
++      shiny::updateSelectInput(session, "layer", selected = tag)
+       # And the controls, so the panel describes the result it is showing
+       # rather than the defaults. A page that shows one contrast above
+       # settings for another invites re-running the wrong thing.
+@@ -374,7 +400,7 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+       if (!is.null(p$covariates)) {
+         shiny::updateSelectizeInput(session, "covariates", selected = p$covariates)
+       }
+-    }, priority = -20L, ignoreInit = TRUE)
++    }, priority = -20L, ignoreInit = FALSE)
+ 
+     # One number per view, bumped when a run starts and checked when it
+     # comes back. Pressing Run again while the previous run is still out
+@@ -506,6 +532,16 @@ diff_view_server <- function(id, current_project = shiny::reactiveVal(NULL),
+     # screen would say so. Keyed on input$layer rather than on active(),
+     # which also invalidates when the control below it re-renders.
+     shiny::observeEvent(input$layer, {
++      pending <- restoring_layer()
++      if (!is.null(pending)) {
++        if (identical(input$layer, pending)) restoring_layer(NULL)
++        return()
++      }
++      b <- diff_bundle()
++      proj <- current_project()
++      if (!is.null(b$provenance_binding) && !is.null(proj) &&
++          identical(names(b$provenance_binding$inputs), input$layer) &&
++          omicsCore::result_inputs_current(b$provenance_binding, proj)) return()
+       diff_bundle(NULL)
+       diff_error(NULL)
+     }, ignoreInit = TRUE)
+diff --git a/packages/omicsApp/R/mod_enrich_view.R b/packages/omicsApp/R/mod_enrich_view.R
+index 954fa99..dfbf099 100644
+--- a/packages/omicsApp/R/mod_enrich_view.R
++++ b/packages/omicsApp/R/mod_enrich_view.R
+@@ -85,7 +85,7 @@ enrich_view_server <- function(id, diff_bundle = shiny::reactiveVal(NULL),
+       if (!omicsCore::result_inputs_current(saved$provenance_binding, proj)) return()
+       is_demo(FALSE)
+       enrich_bundle(saved)
+-    }, priority = -20L, ignoreInit = TRUE)
++    }, priority = -20L, ignoreInit = FALSE)
+ 
+     # One number per view, bumped when a run starts and checked when it
+     # comes back. Pressing Run again while the previous run is still out
+diff --git a/packages/omicsApp/R/mod_integration_view.R b/packages/omicsApp/R/mod_integration_view.R
+index 8cc9628..0a6b779 100644
+--- a/packages/omicsApp/R/mod_integration_view.R
++++ b/packages/omicsApp/R/mod_integration_view.R
+@@ -271,7 +271,7 @@ integration_view_server <- function(id,
+       if (!omicsCore::result_inputs_current(saved$provenance_binding, proj)) return()
+       is_demo(FALSE)
+       integration_bundle(saved)
+-    }, priority = -20L, ignoreInit = TRUE)
++    }, priority = -20L, ignoreInit = FALSE)
+ 
+     # Set only by the user, and only for the model it was set against, so
+     # accepting an unadjusted second layer once does not silently persist
+diff --git a/packages/omicsApp/tests/testthat/test-result-attribution.R b/packages/omicsApp/tests/testthat/test-result-attribution.R
+index aae6449..b134c4b 100644
+--- a/packages/omicsApp/tests/testthat/test-result-attribution.R
++++ b/packages/omicsApp/tests/testthat/test-result-attribution.R
+@@ -246,6 +246,48 @@ test_that("opening a project shows the differential it was saved with", {
+     got <- session$getReturned()$bundle()
+     expect_false(is.null(got), info = "the saved result was not restored")
+     expect_equal(got$params$comparison, "B_vs_A")
++    # Browser controls bind after the result has arrived. The first layer
++    # value is initialization, and must not erase the restored result.
++    session$setInputs(layer = "prot")
++    session$flushReact()
++    expect_equal(session$getReturned()$bundle()$params$comparison, "B_vs_A")
++  })
++})
++
++test_that("restoring waits for its layer binding, then a user layer change clears it", {
++  p <- ra_project()
++  p$experiments$other <- ra_input(seed = 4)
++  saved <- ra_result(p, tag = "other", params = list(method = "limma", comparison = "saved"))
++  p$bundles <- list(diff = saved)
++  proj <- shiny::reactiveVal(NULL)
++  act <- shiny::reactiveVal(0L)
++  shiny::testServer(diff_view_server,
++                    args = list(current_project = proj, activation = act), {
++    session$flushReact()
++    proj(p)
++    act(1L)
++    session$flushReact()
++    # A late value from the demo's dropdown can precede the new binding.
++    session$setInputs(layer = "prot")
++    expect_equal(session$getReturned()$bundle()$params$comparison, "saved")
++    session$setInputs(layer = "other")
++    expect_equal(session$getReturned()$bundle()$params$comparison, "saved")
++    session$setInputs(layer = "prot")
++    expect_null(session$getReturned()$bundle())
++  })
++})
++
++test_that("a project loaded before the first observer flush restores its result", {
++  p <- ra_project()
++  saved <- ra_result(p, params = list(method = "limma", comparison = "startup"))
++  p$bundles <- list(diff = saved)
++  shiny::testServer(diff_view_server,
++                    args = list(current_project = shiny::reactiveVal(p),
++                                activation = shiny::reactiveVal(1L)), {
++    session$flushReact()
++    expect_equal(session$getReturned()$bundle()$params$comparison, "startup")
++    session$setInputs(layer = "prot")
++    expect_equal(session$getReturned()$bundle()$params$comparison, "startup")
+   })
+ })
+ 
+diff --git a/packages/omicsCore/R/enrich-genesets.R b/packages/omicsCore/R/enrich-genesets.R
+index 16ffe21..0e874e7 100644
+--- a/packages/omicsCore/R/enrich-genesets.R
++++ b/packages/omicsCore/R/enrich-genesets.R
+@@ -80,16 +80,39 @@ ensure_enrichment_deps <- function(extras = character(0)) {
+ # ---- session memoisation ------------------------------------------------
+ 
+ .omicsCore_enrich_cache <- new.env(parent = emptyenv())
++.omicsCore_enrich_cache_identity <- new.env(parent = emptyenv())
++
++geneset_offline <- function() {
++  tolower(Sys.getenv("OMICSCORE_OFFLINE", "")) %in% c("1", "true", "yes")
++}
++
++# Identity includes the directory and contents: importing a table or switching
++# projects must not keep serving a table memoised from a different cache.
++geneset_cache_identity <- function(key) {
++  parts <- strsplit(key, "::", fixed = TRUE)[[1L]]
++  if (length(parts) != 3L) return(NULL)
++  dir <- geneset_cache_dir(write = FALSE)
++  path <- if (is.null(dir)) "" else geneset_cache_file(dir, parts[[2L]], parts[[3L]])
++  list(path = if (nzchar(path)) normalizePath(path, mustWork = FALSE) else "",
++       md5 = if (nzchar(path) && file.exists(path)) unname(tools::md5sum(path)) else "",
++       offline = geneset_offline())
++}
+ 
+ cache_get <- function(key) {
+   if (!exists(key, envir = .omicsCore_enrich_cache, inherits = FALSE)) {
+     return(NULL)
+   }
++  identity <- .omicsCore_enrich_cache_identity[[key]]
++  if (!identical(identity, geneset_cache_identity(key))) {
++    cache_drop(key)
++    return(NULL)
++  }
+   get(key, envir = .omicsCore_enrich_cache, inherits = FALSE)
+ }
+ 
+ cache_set <- function(key, value) {
+   assign(key, value, envir = .omicsCore_enrich_cache)
++  assign(key, geneset_cache_identity(key), envir = .omicsCore_enrich_cache_identity)
+   invisible(value)
+ }
+ 
+@@ -97,6 +120,9 @@ cache_drop <- function(key) {
+   if (exists(key, envir = .omicsCore_enrich_cache, inherits = FALSE)) {
+     rm(list = key, envir = .omicsCore_enrich_cache)
+   }
++  if (exists(key, envir = .omicsCore_enrich_cache_identity, inherits = FALSE)) {
++    rm(list = key, envir = .omicsCore_enrich_cache_identity)
++  }
+   invisible(NULL)
+ }
+ 
+@@ -196,6 +222,10 @@ legacy_subcollection <- function(subcollection) {
+ }
+ 
+ fetch_msigdbr_raw <- function(database, organism) {
++  if (geneset_offline()) {
++    stop("Offline mode: no readable gene-set cache for '", database, "' (", organism,
++         "). Import or repair the local gene-set table before retrying.", call. = FALSE)
++  }
+   cfg <- DB_MSIGDBR_MAP[[database]]
+   msig_args <- names(formals(msigdbr::msigdbr))
+ 
+diff --git a/packages/omicsCore/R/export-report.R b/packages/omicsCore/R/export-report.R
+index 269d142..e603066 100644
+--- a/packages/omicsCore/R/export-report.R
++++ b/packages/omicsCore/R/export-report.R
+@@ -121,7 +121,7 @@ export_report <- function(
+   }, add = TRUE)
+ 
+   output_format <- switch(format,
+-    html = rmarkdown::html_document(self_contained = TRUE),
++    html = rmarkdown::html_document(self_contained = TRUE, mathjax = NULL),
+     pdf  = pdf_output_format(scratch)
+   )
+ 
+diff --git a/packages/omicsCore/R/geneset-refresh.R b/packages/omicsCore/R/geneset-refresh.R
+index debfcf9..4e48132 100644
+--- a/packages/omicsCore/R/geneset-refresh.R
++++ b/packages/omicsCore/R/geneset-refresh.R
+@@ -40,6 +40,7 @@ kegg_org_code <- function(organism) {
+ # Single seam for the network: every KEGG request goes through here so
+ # tests can mock one binding. `path` is the REST path, e.g. "/list/hsa".
+ kegg_rest_table <- function(path) {
++  if (geneset_offline()) stop("Offline mode: KEGG downloads are disabled.", call. = FALSE)
+   utils::read.delim(
+     paste0(KEGG_REST_BASE, path),
+     header = FALSE, sep = "\t", quote = "", comment.char = "",
+@@ -140,6 +141,7 @@ is_live_kegg_table <- function(df) {
+ # table never touches the network. Failure returns the stale table -- stale
+ # costs freshness, never the run.
+ maybe_refresh_kegg_cache <- function(cached, organism) {
++  if (geneset_offline()) return(cached)
+   if (!is_live_kegg_table(cached)) return(cached)
+   ttl <- geneset_ttl_days()
+   if (ttl <= 0) return(cached)
+@@ -210,6 +212,10 @@ refresh_geneset_cache <- function(
+   force = FALSE,
+   quiet = FALSE
+ ) {
++  if (geneset_offline()) {
++    stop("Offline mode: gene-set refresh is disabled. Use omicsDesk::import_geneset_cache()",
++         " or restart with online = TRUE.", call. = FALSE)
++  }
+   organism <- normalize_organism(organism)
+   databases <- unique(vapply(databases, normalize_enrich_database, character(1L)))
+   if (length(databases) == 0L) {
+diff --git a/packages/omicsCore/tests/testthat/test-desktop-offline.R b/packages/omicsCore/tests/testthat/test-desktop-offline.R
+new file mode 100644
+index 0000000..670a125
+--- /dev/null
++++ b/packages/omicsCore/tests/testthat/test-desktop-offline.R
+@@ -0,0 +1,54 @@
++test_that("offline cache misses and explicit refresh fail without network calls", {
++  dir <- withr::local_tempdir()
++  withr::local_envvar(OMICSCORE_OFFLINE = "1", OMICSCORE_GENESET_CACHE = dir)
++  expect_error(fetch_msigdbr_table("hallmark", "Hs"), "Offline mode.*cache")
++  expect_error(refresh_geneset_cache("kegg", force = TRUE), "Offline mode")
++  expect_error(kegg_rest_table("/list/hsa"), "Offline mode")
++  expect_length(list.files(dir), 0L)
++})
++
++test_that("switching directories and replacing tables invalidates session memoisation", {
++  first <- withr::local_tempdir()
++  second <- withr::local_tempdir()
++  table <- function(label) data.frame(gs_name = label, gene_symbol = "TP53")
++  file <- "hallmark__Homo_sapiens.qs2"
++  qs2::qs_save(table("FIRST"), file.path(first, file))
++  qs2::qs_save(table("SECOND"), file.path(second, file))
++  withr::local_envvar(OMICSCORE_OFFLINE = "1", OMICSCORE_GENESET_CACHE = first)
++  expect_equal(fetch_msigdbr_table("hallmark", "Hs")$gs_name, "FIRST")
++  Sys.setenv(OMICSCORE_GENESET_CACHE = second)
++  expect_equal(fetch_msigdbr_table("hallmark", "Hs")$gs_name, "SECOND")
++  qs2::qs_save(table("REPLACED"), file.path(second, file))
++  expect_equal(fetch_msigdbr_table("hallmark", "Hs")$gs_name, "REPLACED")
++  unlink(file.path(second, file))
++  expect_error(fetch_msigdbr_table("hallmark", "Hs"), "Offline mode")
++})
++
++test_that("offline KEGG caches are served without TTL refresh", {
++  dir <- withr::local_tempdir()
++  withr::local_envvar(OMICSCORE_OFFLINE = "1", OMICSCORE_GENESET_CACHE = dir,
++                      OMICSCORE_GENESET_TTL_DAYS = "1")
++  path <- file.path(dir, "kegg__Homo_sapiens.qs2")
++  table <- data.frame(gs_name = "LOCAL", gene_symbol = "TP53",
++                      gs_source = "KEGG REST local use")
++  qs2::qs_save(table, path)
++  Sys.setFileTime(path, Sys.time() - 90 * 86400)
++  testthat::local_mocked_bindings(kegg_rest_table = function(...) stop("network touched"))
++  expect_equal(fetch_msigdbr_table("kegg", "Hs"), table)
++})
++
++test_that("default HTML reports have no remote MathJax dependency", {
++  skip_if_not_installed("rmarkdown")
++  skip_if_not(rmarkdown::pandoc_available())
++  mat <- matrix(1:12, nrow = 3, dimnames = list(paste0("P", 1:3), paste0("S", 1:4)))
++  input <- omics_input(mat, data.frame(group = c("A", "A", "B", "B"),
++                                      row.names = colnames(mat)),
++                       data.frame(feature_id = rownames(mat)),
++                       omics_type = "proteomics", assay_type = "normalized_intensity")
++  project <- omics_project("offline report", list(protein = input))
++  out <- withr::local_tempfile(fileext = ".html")
++  export_report(project, out)
++  html <- paste(readLines(out, warn = FALSE), collapse = "\n")
++  expect_false(grepl("src=[\"']https?://[^\"']*[Mm]ath[Jj]ax", html))
++  expect_gt(file.size(out), 1000)
++})

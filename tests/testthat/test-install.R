@@ -3,10 +3,10 @@
 # a library of our choosing and leave the record in the desk folder.
 
 make_fake_bundle <- function(dir, r_minor = omicsDesk:::r_minor_version(),
-                             with_pandoc = TRUE) {
-  pkg <- file.path(dir, "src", "fakepkg")
+                             with_pandoc = TRUE, pkg_name = "fakepkg") {
+  pkg <- file.path(dir, "src", pkg_name)
   dir.create(file.path(pkg, "R"), recursive = TRUE)
-  writeLines(c("Package: fakepkg", "Version: 0.1.0", "Title: Fake",
+  writeLines(c(paste("Package:", pkg_name), "Version: 0.1.0", "Title: Fake",
                "Description: A package for the installer test.",
                "License: MIT + file LICENSE", "Encoding: UTF-8",
                "Author: test", "Maintainer: test <test@example.org>"),
@@ -27,7 +27,7 @@ make_fake_bundle <- function(dir, r_minor = omicsDesk:::r_minor_version(),
   tools::write_PACKAGES(src_contrib, type = "source", verbose = FALSE)
   write.dcf(rbind(c(Bundle = "omicsDesk", Version = "0.0.0.9000", RMinor = r_minor,
                     Platform = R.version$platform, Built = "2026-01-01 00:00:00",
-                    Packages = "fakepkg (0.1.0)")),
+                    Packages = paste0(pkg_name, " (0.1.0)"))),
             file.path(bundle, "BUNDLE"))
   if (with_pandoc) {
     dir.create(file.path(bundle, "pandoc"))
@@ -39,7 +39,8 @@ make_fake_bundle <- function(dir, r_minor = omicsDesk:::r_minor_version(),
 test_that("install_offline() installs from the bundle's repository into the given library", {
   skip_on_cran()
   home <- local_desk_home()
-  work <- withr::local_tempdir()
+  work <- file.path(withr::local_tempdir(), "离线安装 bundle with spaces #1 (test)")
+  dir.create(work)
   bundle <- make_fake_bundle(work)
   lib <- file.path(work, "lib")
   old_libs <- .libPaths()
@@ -69,4 +70,20 @@ test_that("a bundle for another R minor version is refused unless forced", {
 
 test_that("a folder that is not a bundle is refused", {
   expect_error(install_offline(withr::local_tempdir()), "No BUNDLE file")
+})
+
+test_that("first-party packages are replaced even when the same version is installed", {
+  skip_on_cran()
+  local_desk_home()
+  work <- withr::local_tempdir()
+  bundle <- make_fake_bundle(work, with_pandoc = FALSE, pkg_name = "omicsApp")
+  lib <- file.path(work, "lib")
+  old_libs <- .libPaths()
+  withr::defer(.libPaths(old_libs))
+  install_offline(bundle, lib = lib, quiet = TRUE)
+  marker <- file.path(lib, "omicsApp", "old-code-marker")
+  writeLines("stale code", marker)
+  install_offline(bundle, lib = lib, quiet = TRUE)
+  expect_true(file.exists(file.path(lib, "omicsApp", "DESCRIPTION")))
+  expect_false(file.exists(marker))
 })

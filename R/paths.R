@@ -27,7 +27,7 @@
 desk_home <- function() {
   dir <- Sys.getenv("OMICSDESK_HOME", "")
   if (!nzchar(dir)) dir <- path.expand("~/omicsDesk")
-  dir
+  path.expand(dir)
 }
 
 #' @rdname desk_home
@@ -44,12 +44,14 @@ desk_paths <- function() {
 }
 
 desk_data_dir    <- function() desk_paths()$projects
-desk_geneset_dir <- function() desk_paths()$genesets
+desk_geneset_dir <- function() path.expand(env_or("OMICSCORE_GENESET_CACHE", desk_paths()$genesets))
 desk_pandoc_dir  <- function() desk_paths()$pandoc
 desk_bundle_file <- function() desk_paths()$bundle
 
 ensure_dir <- function(path) {
+  assert_path(path, "path")
   if (!dir.exists(path)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+  if (!dir.exists(path)) stop("Could not create directory: ", path, call. = FALSE)
   invisible(path)
 }
 

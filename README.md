@@ -2,6 +2,37 @@
 
 The offline, single-machine edition of [omicsApp](https://github.com/puweilin/omicsApp).
 
+**0.1.0** pins omicsApp/omicsCore to `392c877`, based on the tested
+`f3c2ff4` baseline plus the desktop offline, cache, report and recovery fixes.
+The analysis engine and all seven views come from those shared packages.
+Each offline bundle records its exact source revision and file checksums.
+
+### 本地版快速开始
+
+下载与操作系统、CPU 架构及 R 小版本匹配的 ZIP，解压后执行：
+
+```sh
+Rscript INSTALL.R
+Rscript START.R
+```
+
+也可以在 R 中使用：
+
+```r
+omicsDesk::doctor()
+omicsDesk::launch()
+# 较小内存的电脑可以减少后台进程：
+omicsDesk::launch(workers = 1L)
+```
+
+升级后重启 R。项目和自行导入的基因集会保留在 `~/omicsDesk`。
+默认使用独立 R 后台进程，支持 macOS；`workers = 0L` 沿用当前 future 设置。
+离线模式下，缺失或损坏的基因集会给出本地修复提示，不尝试下载。
+QC 页面需要点击 **Apply to downstream** 才会把清洗结果用于后续分析。
+
+可以用安装包内的 `Rscript VERIFY.R <测试输出目录>` 运行合成数据验收。
+该检查会实际执行分析、导出、项目保存与恢复，并在独立 R 进程重跑分析脚本。
+
 omicsCore and omicsApp assume a machine that can reach CRAN and
 Bioconductor: analysis engines are optional packages installed on first
 use, and the MSigDB gene sets come from `msigdbr`, which on current
@@ -75,8 +106,8 @@ monorepo beside this one:
 ```sh
 Rscript tools/prewarm_genesets.R                     # once per MSigDB release
 Rscript tools/build_bundle.R --omicsapp ../omicsApp  # -> dist/omicsDesk-<ver>-R<minor>-<platform>/ and .zip
-Rscript tools/build_bundle.R --omicsapp-ref main     # the same, with omicsApp fetched from GitHub at that ref
-Rscript tools/verify_bundle.R dist/omicsDesk-<...>   # installs it into a throwaway library with the network blackholed
+Rscript tools/build_bundle.R --omicsapp-ref 392c877eb3dc5b022db005966fa6bd48a6c20dfa     # the same, with omicsApp fetched from GitHub at that ref
+Rscript tools/verify_bundle.R dist/omicsDesk-<...>.zip --browser --output dist/verification
 ```
 
 Every bundle's `BUNDLE` file records the omicsApp commit it was built
@@ -98,17 +129,32 @@ devtools::install_local("../omicsApp/packages/omicsApp")
 devtools::install_local(".")
 ```
 
-Or let pak follow the `Remotes` fields and install all three from GitHub:
+Install the pushed desktop branch with pak; its `Remotes` fields pin both
+shared packages to the matching companion commit:
 
 ```r
-pak::pak("puweilin/omicsDesk")
+pak::pak("puweilin/omicsDesk@codex/local-edition-refresh")
 ```
+
+This update is on a separate branch. The remote omicsApp main branch has
+additional development beyond this tested baseline and needs a separate
+compatibility update before it can replace the pin. CI reads the same pinned
+revision from `DESCRIPTION`.
 
 ### Tests and CI
 
 ```sh
 Rscript -e 'devtools::test()'
 ```
+
+`tools/verify_bundle.R` checks the **final ZIP**, installs every package in a
+fresh library, validates checksums and upstream provenance, and runs real
+proteomics/RNA-seq, enrichment, integration, persistence and export checks.
+`--browser` additionally requires `callr`, `shinytest2`, `chromote` and Chrome;
+it launches `omicsDesk::launch()` with real background workers, exercises
+upload → VSN → apply QC → differential → enrichment → downloads, then restarts
+and checks recovery. Proxy blackholing is used for these checks; this is not an
+operating-system network sandbox.
 
 The suite covers the environment `launch()` sets, the copy-and-never-
 overwrite rule for gene-set tables, import and export, `doctor()` with

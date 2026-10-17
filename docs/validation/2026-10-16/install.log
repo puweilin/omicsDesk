@@ -1,0 +1,77 @@
+Installing 271 of 271 packages
+  from /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/unpacked/omicsDesk-0.1.0-R4.4-macos-arm64/repo
+  into /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/library
+  266 binary packages
+file ‘DESCRIPTION’ has the wrong MD5 checksum
+  5 source packages
+begin installing package ‘GenomeInfoDbData’
+begin installing package ‘GO.db’
+* installing *source* package ‘GenomeInfoDbData’ ...
+** using staged installation
+** data
+** inst
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (GenomeInfoDbData)
+begin installing package ‘omicsCore’
+* installing *source* package ‘omicsCore’ ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (omicsCore)
+begin installing package ‘omicsApp’
+* installing *source* package ‘omicsApp’ ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (omicsApp)
+begin installing package ‘omicsDesk’
+* installing *source* package ‘omicsDesk’ ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (omicsDesk)
+* installing *source* package ‘GO.db’ ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (GO.db)
+
+omicsDesk 0.1.0 is installed.
+  library: /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/library
+  folder:  /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/home
+
+Restart R after an upgrade. Then run omicsDesk::doctor() and omicsDesk::launch().
+(or double-click the launcher next to this script).

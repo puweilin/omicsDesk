@@ -24,6 +24,10 @@
 #' install_offline("~/Downloads/omicsDesk-0.1.0-R4.5-windows")
 #' }
 install_offline <- function(bundle_dir, lib = NULL, force = FALSE, quiet = FALSE) {
+  assert_path(bundle_dir, "bundle_dir")
+  assert_path(lib, "lib", allow_null = TRUE)
+  assert_flag(force, "force")
+  assert_flag(quiet, "quiet")
   script <- system.file("bundle", "INSTALL.R", package = "omicsDesk")
   if (!nzchar(script)) stop("The installer script is missing from this omicsDesk.")
   env <- new.env(parent = globalenv())

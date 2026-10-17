@@ -1,0 +1,111 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-app-hygiene.R","app-hygiene","the demo leaves the caller's random stream where it was",9,0,FALSE,FALSE,0,0.108,0.014,0.122,9
+"test-app-hygiene.R","app-hygiene","the demo plants no seed in a session that had none",3,0,FALSE,FALSE,0,0.012,0.002,0.0139999999999998,3
+"test-app-hygiene.R","app-hygiene","the demo is the same data whatever the stream was",2,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00300000000000011,2
+"test-app-hygiene.R","app-hygiene","a frame that seeds twice restores to its first state",1,0,FALSE,FALSE,0,0.00100000000000033,0,0.00200000000000022,1
+"test-app-hygiene.R","app-hygiene","package code seeds the stream only through local_seed()",1,0,FALSE,FALSE,0,0.00800000000000001,0.001,0.0089999999999999,1
+"test-app-server-acceptance.R","app-server-acceptance","upload and confirm: the project appears, and is on disk before anything else happens",9,0,FALSE,FALSE,0,3.294,0.135,3.432,9
+"test-app-server-acceptance.R","app-server-acceptance","re-uploading the same file clears nothing",5,0,FALSE,FALSE,0,2.788,0.047,2.832,5
+"test-app-server-acceptance.R","app-server-acceptance","uploading a different file asks, and confirming clears the analyses",9,0,FALSE,FALSE,0,3.008,0.065,3.069,9
+"test-app-server-acceptance.R","app-server-acceptance","the volcano is two-coloured at a stated cut, and the sliders do not touch it",7,0,FALSE,FALSE,0,2.314,0.035,2.346,7
+"test-app-server-acceptance.R","app-server-acceptance","enrichment reads the thresholds the hit table is read at",4,0,FALSE,FALSE,0,2.465,0.038,2.501,4
+"test-app-server-acceptance.R","app-server-acceptance","the report view's analysis code names the calls that were run",5,0,FALSE,FALSE,0,1.989,0.033,2.021,5
+"test-app-server-acceptance.R","app-server-acceptance","Save as puts the project under My projects, and Open brings it back",6,0,FALSE,FALSE,0,4.564,0.0539999999999999,4.614,6
+"test-app-server-acceptance.R","app-server-acceptance","a new session on the same store restores the last one without being asked",5,0,FALSE,FALSE,0,3.634,0.048,3.678,5
+"test-app-server-acceptance.R","app-server-acceptance","the Experiments table's View link lands on QC with that layer selected",3,0,FALSE,FALSE,0,1.639,0.03,1.667,3
+"test-app-server-acceptance.R","app-server-acceptance","the sidebar switches views and never lands on a view that does not exist",3,0,FALSE,FALSE,0,1.059,0.00900000000000001,1.068,3
+"test-delete-layer-and-uploads.R","delete-layer-and-uploads","deleting a project takes its archived upload with it",4,0,FALSE,FALSE,0,0.014999999999997,0.002,0.0180000000000007,4
+"test-delete-layer-and-uploads.R","delete-layer-and-uploads","an upload another project still uses is kept",4,0,FALSE,FALSE,0,0.0130000000000017,0.003,0.0150000000000006,4
+"test-delete-layer-and-uploads.R","delete-layer-and-uploads","a project with no archived upload deletes quietly",2,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00399999999999778,2
+"test-delete-layer-and-uploads.R","delete-layer-and-uploads","a layer can be removed without touching the others",3,0,FALSE,FALSE,0,0.0829999999999984,0.002,0.0850000000000009,3
+"test-delete-layer-and-uploads.R","delete-layer-and-uploads","removing a layer drops the sample links that named it",2,0,FALSE,FALSE,0,0.0740000000000016,0.002,0.0750000000000028,2
+"test-delete-layer-and-uploads.R","delete-layer-and-uploads","cancelling leaves the project alone",2,0,FALSE,FALSE,0,0.0440000000000005,0.00099999999999989,0.0450000000000017,2
+"test-diff-controls.R","diff-controls","the layer control is what makes DESeq2 reachable",4,0,FALSE,FALSE,0,0.0890000000000022,0.002,0.0899999999999999,4
+"test-diff-controls.R","diff-controls","a layer name that is not in the project is ignored",2,0,FALSE,FALSE,0,0.0719999999999992,0.001,0.0730000000000004,2
+"test-diff-controls.R","diff-controls","significance follows the chosen p column",2,0,FALSE,FALSE,0,0.106999999999999,0.002,0.109000000000002,2
+"test-diff-controls.R","diff-controls","the label follows the column, so no figure says adj.P over raw p",4,0,FALSE,FALSE,0,0.0649999999999977,0.002,0.0670000000000002,4
+"test-diff-controls.R","diff-controls","the fold-change cutoff defaults to log2(1.2)",1,0,FALSE,FALSE,0,0.0720000000000027,0.001,0.0720000000000027,1
+"test-diff-controls.R","diff-controls","an empty or negative fold-change box falls back, not to nothing",3,0,FALSE,FALSE,0,0.0730000000000004,0.001,0.0740000000000016,3
+"test-diff-controls.R","diff-controls","a fold-change the old slider could not express now works",1,0,FALSE,FALSE,0,0.0909999999999975,0.001,0.0909999999999975,1
+"test-diff-controls.R","diff-controls","Re-run with no contrast chosen yet does not complain",2,0,FALSE,FALSE,0,0.248000000000001,0.003,0.251000000000001,2
+"test-diff-controls.R","diff-controls","the first run uses the same contrast the controls will show",2,0,FALSE,FALSE,0,0.220000000000002,0.003,0.227,2
+"test-diff-controls.R","diff-controls","a run on the rnaseq layer uses an engine that layer supports",2,0,FALSE,FALSE,0,0.742000000000001,0.006,0.748000000000001,2
+"test-diff-controls.R","diff-controls","a project with no experiments says so rather than blaming the contrast",1,0,FALSE,FALSE,0,0.0569999999999986,0.001,0.0579999999999998,1
+"test-diff-controls.R","diff-controls","changing layer clears the result rather than re-running",3,0,FALSE,FALSE,0,0.382999999999999,0.005,0.387999999999998,3
+"test-diff-controls.R","diff-controls","keeping the old result would have been worse than clearing",2,0,FALSE,FALSE,0,0.898999999999997,0.005,0.902999999999999,2
+"test-diff-controls.R","diff-controls","Re-run after a layer change uses the new layer's engine",2,0,FALSE,FALSE,0,0.838999999999999,0.005,0.844000000000001,2
+"test-diff-controls.R","diff-controls","a column of sample identifiers is not offered as a contrast",2,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00300000000000011,2
+"test-diff-controls.R","diff-controls","every offered column has at least two samples per level",1,0,FALSE,FALSE,0,0.00500000000000256,0.001,0.00499999999999545,1
+"test-diff-controls.R","diff-controls","a named column wins over one that merely has fewer levels",1,0,FALSE,FALSE,0,0.000999999999997669,0,0.00200000000000244,1
+"test-diff-controls.R","diff-controls","a finished result survives the controls re-rendering",5,0,FALSE,FALSE,0,0.252000000000002,0.004,0.255000000000003,5
+"test-diff-controls.R","diff-controls","opening the view does not start an analysis",2,0,FALSE,FALSE,0,0.0949999999999989,0.001,0.0960000000000036,2
+"test-diff-controls.R","diff-controls","Re-run is what starts it",2,0,FALSE,FALSE,0,0.218999999999994,0.003,0.220999999999997,2
+"test-late-callbacks.R","late-callbacks","a result that comes back into another project is refused",5,0,FALSE,FALSE,0,0.106000000000002,0.002,0.108000000000004,5
+"test-late-callbacks.R","late-callbacks","a result is stamped with where it started, not where it landed",3,0,FALSE,FALSE,0,0.007000000000005,0.001,0.00800000000000267,3
+"test-late-callbacks.R","late-callbacks","a result is refused when the data changed under it",2,0,FALSE,FALSE,0,0.00199999999999534,0.001,0.00300000000000011,2
+"test-late-callbacks.R","late-callbacks","a context that cannot be read is a refusal, not a pass",3,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00500000000000256,3
+"test-late-callbacks.R","late-callbacks","reopening the same project refuses an outstanding result",2,0,FALSE,FALSE,0,0.00199999999999534,0.001,0.00300000000000011,2
+"test-late-callbacks.R","late-callbacks","an unchanged project admits the result it was launched with",2,0,FALSE,FALSE,0,0.00199999999999534,0.001,0.00300000000000011,2
+"test-late-callbacks.R","late-callbacks","an upstream that has been retired refuses its dependant",3,0,FALSE,FALSE,0,0.00300000000000011,0,0.00399999999999778,3
+"test-late-callbacks.R","late-callbacks","the demo still computes, and is still bound by the request number",2,0,FALSE,FALSE,0,0.00199999999999534,0,0.00300000000000011,2
+"test-late-callbacks.R","late-callbacks","an unattributed result is not filed into any project",2,0,FALSE,FALSE,0,0.00199999999999534,0,0.00300000000000011,2
+"test-layer-replacement.R","layer-replacement","the same file yields the same fingerprint",1,0,FALSE,FALSE,0,0.000999999999997669,0,0.00199999999999534,1
+"test-layer-replacement.R","layer-replacement","different content yields a different fingerprint",1,0,FALSE,FALSE,0,0.000999999999997669,0,0.00300000000000011,1
+"test-layer-replacement.R","layer-replacement","the parse settings are part of the fingerprint",1,0,FALSE,FALSE,0,0.00100000000000477,0,0.00200000000000244,1
+"test-layer-replacement.R","layer-replacement","an unreadable path has no fingerprint",1,0,FALSE,FALSE,0,0.000999999999997669,0.001,0.00100000000000477,1
+"test-layer-replacement.R","layer-replacement","a match needs a fingerprint on both sides",4,0,FALSE,FALSE,0,0.00500000000000256,0.001,0.00600000000000023,4
+"test-layer-replacement.R","layer-replacement","a first import commits without asking",1,0,FALSE,FALSE,0,0.0750000000000028,0.001,0.0760000000000005,1
+"test-layer-replacement.R","layer-replacement","re-picking the same file commits nothing",1,0,FALSE,FALSE,0,0.0829999999999984,0.001,0.0840000000000032,1
+"test-layer-replacement.R","layer-replacement","new data does not commit until the replace is confirmed",3,0,FALSE,FALSE,0,0.0850000000000009,0.002,0.0870000000000033,3
+"test-layer-replacement.R","layer-replacement","the replace dialog names the analyses that will be lost",3,0,FALSE,FALSE,0,0.00300000000000011,0,0.00300000000000011,3
+"test-layer-replacement.R","layer-replacement","replacing the layer replaces the QC result rather than emptying it",4,0,FALSE,FALSE,0,0.674,0.006,0.678000000000004,4
+"test-layer-replacement.R","layer-replacement","replacing the layer clears the differential result",2,0,FALSE,FALSE,0,0.128999999999998,0.002,0.130000000000003,2
+"test-layer-replacement.R","layer-replacement","replacing the layer clears the enrichment result",2,0,FALSE,FALSE,0,0.624000000000002,0.003,0.625999999999998,2
+"test-layer-replacement.R","layer-replacement","replacing the layer clears the integration result",2,0,FALSE,FALSE,0,0.356999999999999,0.004,0.359999999999999,2
+"test-layer-replacement.R","layer-replacement","a view keeps its result when nothing was replaced",1,0,FALSE,FALSE,0,0.0820000000000007,0.001,0.0829999999999984,1
+"test-layer-visibility.R","layer-visibility","QC offers a layer picker and honours it",3,0,FALSE,FALSE,0,0.489000000000004,0.005,0.493000000000002,3
+"test-layer-visibility.R","layer-visibility","the picker wins over a layer another view asked for",2,0,FALSE,FALSE,0,0.490000000000002,0.004,0.495000000000005,2
+"test-layer-visibility.R","layer-visibility","a single-layer project gets no picker to choose from",2,0,FALSE,FALSE,0,0.253,0.003,0.255999999999993,2
+"test-layer-visibility.R","layer-visibility","Enrichment states its layer rather than offering to change it",2,0,FALSE,FALSE,0,0.152999999999999,0.002,0.153999999999996,2
+"test-layer-visibility.R","layer-visibility","the diff view hands its layer tag out",3,0,FALSE,FALSE,0,0.0860000000000056,0.002,0.088000000000001,3
+"test-layer-visibility.R","layer-visibility","the quality panel defaults to the question the modality raises",2,0,FALSE,FALSE,0,0.512,0.004,0.515999999999998,2
+"test-layer-visibility.R","layer-visibility","the default is a default, not a lock",2,0,FALSE,FALSE,0,0.387,0.004,0.390000000000001,2
+"test-layer-visibility.R","layer-visibility","the panel title follows the panel",2,0,FALSE,FALSE,0,0.795999999999999,0.003,0.800000000000004,2
+"test-mod_diff_view-server.R","mod_diff_view-server","with no project the view analyses the demo, for real",4,0,FALSE,FALSE,0,0.150999999999996,0.003,0.154000000000003,4
+"test-mod_diff_view-server.R","mod_diff_view-server","diff view runs run_diff() against the live project",7,0,FALSE,FALSE,0,0.189999999999998,0.0119999999999999,0.203000000000003,7
+"test-mod_diff_view-server.R","mod_diff_view-server","diff view surfaces validation errors instead of crashing",2,0,FALSE,FALSE,0,0.0850000000000009,0.011,0.0949999999999989,2
+"test-mod_diff_view-server.R","mod_diff_view-server","the demo (proteomics) view hides the count engines",4,0,FALSE,FALSE,0,0.0660000000000025,0.001,0.0670000000000002,4
+"test-mod_diff_view-server.R","mod_diff_view-server","a raw-count layer offers the count engines instead",3,0,FALSE,FALSE,0,0.088000000000001,0.011,0.0990000000000038,3
+"test-mod_diff_view-server.R","mod_diff_view-server","the volcano does not depend on the threshold sliders",2,0,FALSE,FALSE,0,0.225999999999999,0.002,0.228000000000002,2
+"test-mod_diff_view-server.R","mod_diff_view-server","the sliders still drive the hit table",1,0,FALSE,FALSE,0,0.179000000000002,0.002,0.18,1
+"test-mod_diff_view-server.R","mod_diff_view-server","the volcano card says the sliders do not reach it",1,0,FALSE,FALSE,0,0.0069999999999979,0,0.00800000000000267,1
+"test-mod_enrich_view-server.R","mod_enrich_view-server","enrich view falls back to demo when diff_bundle is NULL",3,0,FALSE,FALSE,0,0.144000000000005,0.002,0.145999999999994,3
+"test-mod_enrich_view-server.R","mod_enrich_view-server","enrich view runs run_enrichment when clusterProfiler is installed",3,0,FALSE,FALSE,0,0.162999999999997,0.002,0.165999999999997,3
+"test-mod_enrich_view-server.R","mod_enrich_view-server","the enrichment download writes the whole table, not the filtered view",5,0,FALSE,FALSE,0,0.0859999999999985,0.006,0.0919999999999987,5
+"test-mod_enrich_view-server.R","mod_enrich_view-server","the exported table is sorted so the file opens on the strongest result",1,0,FALSE,FALSE,0,0.146000000000001,0.002,0.147999999999996,1
+"test-mod_integration_view-server.R","mod_integration_view-server","integration view falls back to demo when prerequisites are absent",3,0,FALSE,FALSE,0,0.341999999999999,0.005,0.345999999999997,3
+"test-mod_integration_view-server.R","mod_integration_view-server","integration view stays on demo when project has only one experiment",2,0,FALSE,FALSE,0,0.0900000000000034,0.012,0.101999999999997,2
+"test-mod_integration_view-server.R","mod_integration_view-server","integration view runs concordance when two compatible layers exist",4,0,FALSE,FALSE,0,0.299999999999997,0.014,0.314,4
+"test-result-attribution.R","result-attribution","a restored project drops a saved result when its data changes",5,0,FALSE,FALSE,0,0.0100000000000051,0,0.0110000000000028,5
+"test-result-attribution.R","result-attribution","a result whose data is unchanged survives retirement",2,0,FALSE,FALSE,0,0.00200000000000244,0.001,0.00200000000000244,2
+"test-result-attribution.R","result-attribution","retirement reaches the autosave, not just the page",5,0,FALSE,FALSE,0,0.00499999999999545,0.002,0.007000000000005,5
+"test-result-attribution.R","result-attribution","a result from another project is never adopted",2,0,FALSE,FALSE,0,0.00199999999999534,0.001,0.00300000000000011,2
+"test-result-attribution.R","result-attribution","a result with no attribution is not filled in with the current one",2,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00300000000000011,2
+"test-result-attribution.R","result-attribution","bind_result refuses to stamp what it cannot describe",3,0,FALSE,FALSE,0,0.00299999999999301,0.001,0.00399999999999778,3
+"test-result-attribution.R","result-attribution","the same analysis on the same data keeps the same id",2,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00400000000000489,2
+"test-result-attribution.R","result-attribution","enrichment goes when the differential under it goes",2,0,FALSE,FALSE,0,0.00200000000000244,0.001,0.00300000000000011,2
+"test-result-attribution.R","result-attribution","opening an earlier save of the same project is an activation",1,0,FALSE,FALSE,0,2.016,0.029,2.043,1
+"test-result-attribution.R","result-attribution","restoring the autosave is an activation too",1,0,FALSE,FALSE,0,1.621,0.0269999999999999,1.645,1
+"test-result-attribution.R","result-attribution","opening a project shows the differential it was saved with",3,0,FALSE,FALSE,0,0.179000000000002,0.003,0.181000000000004,3
+"test-result-attribution.R","result-attribution","restoring waits for its layer binding, then a user layer change clears it",3,0,FALSE,FALSE,0,0.198,0.003,0.201,3
+"test-result-attribution.R","result-attribution","a project loaded before the first observer flush restores its result",2,0,FALSE,FALSE,0,0.148000000000003,0.002,0.149000000000001,2
+"test-result-attribution.R","result-attribution","a saved result the data has moved past is not restored",1,0,FALSE,FALSE,0,0.0609999999999999,0.001,0.0620000000000047,1
+"test-result-attribution.R","result-attribution","an unattributed saved result is not restored either",1,0,FALSE,FALSE,0,0.0620000000000047,0.001,0.0630000000000024,1
+"test-view-layer-link.R","view-layer-link","the View cell is an actual control when a namespace is given",3,0,FALSE,FALSE,0,0.00900000000000034,0.001,0.00999999999999801,3
+"test-view-layer-link.R","view-layer-link","without a namespace the cell is inert rather than a fake link",2,0,FALSE,FALSE,0,0.00999999999999801,0.001,0.0110000000000028,2
+"test-view-layer-link.R","view-layer-link","the card carries no literal non-ASCII into the page",1,0,FALSE,FALSE,0,0.00200000000000244,0.001,0.00300000000000011,1
+"test-view-layer-link.R","view-layer-link","clicking a row reports that row's tag",2,0,FALSE,FALSE,0,0.0600000000000023,0.002,0.0619999999999976,2
+"test-view-layer-link.R","view-layer-link","a click on a row that no longer exists is ignored",1,0,FALSE,FALSE,0,0.0739999999999981,0.001,0.0750000000000028,1
+"test-view-layer-link.R","view-layer-link","QC shows the requested layer instead of its default pick",1,0,FALSE,FALSE,0,0.0160000000000053,0.001,0.0159999999999982,1
+"test-view-layer-link.R","view-layer-link","no request means the previous behaviour, unchanged",1,0,FALSE,FALSE,0,0.0150000000000006,0.001,0.0160000000000053,1
+"test-view-layer-link.R","view-layer-link","a request naming a layer that is gone falls back rather than emptying",2,0,FALSE,FALSE,0,0.0159999999999982,0.001,0.0159999999999982,2

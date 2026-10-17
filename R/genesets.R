@@ -38,17 +38,19 @@ expected_geneset_files <- function() {
 read_manifest <- function(dir) {
   path <- file.path(dir, "MANIFEST.json")
   if (!file.exists(path)) return(NULL)
-  tryCatch(jsonlite::fromJSON(path, simplifyVector = TRUE),
-           error = function(e) NULL)
+  out <- tryCatch(jsonlite::fromJSON(path, simplifyVector = TRUE),
+                  error = function(e) NULL)
+  if (is.list(out)) out else NULL
 }
 
 write_manifest <- function(dir, manifest) {
   path <- file.path(dir, "MANIFEST.json")
   # Stage-and-rename, as omicsCore does for the tables themselves.
   tmp <- tempfile(pattern = "MANIFEST.", tmpdir = dir, fileext = ".tmp")
+  on.exit(unlink(tmp), add = TRUE)
   jsonlite::write_json(manifest, tmp, auto_unbox = TRUE, pretty = TRUE,
                        dataframe = "rows", null = "null", na = "null")
-  file.rename(tmp, path)
+  if (!file.rename(tmp, path)) stop("Could not write manifest: ", path, call. = FALSE)
   invisible(path)
 }
 
@@ -58,7 +60,23 @@ manifest_files <- function(manifest) {
     return(data.frame(file = character(), md5 = character(),
                       origin = character(), stringsAsFactors = FALSE))
   }
-  as.data.frame(files, stringsAsFactors = FALSE)
+  out <- tryCatch(as.data.frame(files, stringsAsFactors = FALSE),
+                   error = function(e) NULL)
+  if (is.null(out) || !all(c("file", "md5") %in% names(out)) ||
+      anyNA(out$file) || anyDuplicated(out$file)) {
+    return(manifest_files(NULL))
+  }
+  if (!"origin" %in% names(out)) out$origin <- NA_character_
+  out
+}
+
+copy_cache_file <- function(from, to) {
+  tmp <- tempfile(pattern = ".geneset-", tmpdir = dirname(to), fileext = ".tmp")
+  on.exit(unlink(tmp), add = TRUE)
+  if (!file.copy(from, tmp, overwrite = TRUE) || !file.rename(tmp, to)) {
+    stop("Could not copy gene-set table into ", to, call. = FALSE)
+  }
+  invisible(to)
 }
 
 recorded_md5 <- function(manifest) {
@@ -108,6 +126,8 @@ is_live_kegg_source <- function(gs_source) {
 sync_geneset_cache <- function(target = desk_geneset_dir(),
                                source = bundled_geneset_dir(),
                                quiet = TRUE) {
+  assert_path(target, "target")
+  assert_flag(quiet, "quiet")
   out <- list(copied = character(), kept = character(), current = character())
   if (!nzchar(source) || !dir.exists(source)) return(invisible(out))
   files <- list.files(source, pattern = GENESET_FILE_PATTERN)
@@ -130,14 +150,14 @@ sync_geneset_cache <- function(target = desk_geneset_dir(),
         out$current <- c(out$current, f)
         next
       }
-      if (is.na(recorded[f]) || !identical(dst_md5, unname(recorded[f]))) {
+      origin <- rows$origin[match(f, rows$file)]
+      if (length(origin) != 1L || is.na(origin) || origin != "bundle" ||
+          is.na(recorded[f]) || !identical(dst_md5, unname(recorded[f]))) {
         out$kept <- c(out$kept, f)
         next
       }
     }
-    if (!file.copy(src, dst, overwrite = TRUE)) {
-      stop("Could not copy ", f, " into ", target, call. = FALSE)
-    }
+    copy_cache_file(src, dst)
     out$copied <- c(out$copied, f)
     src_row <- src_rows[src_rows$file == f, , drop = FALSE]
     rows <- rows[rows$file != f, , drop = FALSE]
@@ -225,15 +245,15 @@ geneset_vintage <- function(dir = desk_geneset_dir()) {
 #' @param quiet If `FALSE`, report each table imported.
 #'
 #' @return A `data.frame` with one row per imported file: `file`,
-#'   `database`, `organism`, `n_sets`, `gs_source`. Restart the app (or
-#'   the R session) afterwards: omicsCore memoises tables it has already
-#'   read.
+#'   `database`, `organism`, `n_sets`, `gs_source`. Current omicsCore
+#'   invalidates its memory cache when a table's contents change.
 #' @export
 #' @family genesets
 import_geneset_cache <- function(path, quiet = FALSE) {
-  if (!is.character(path) || length(path) != 1L || !file.exists(path)) {
+  if (!is.character(path) || length(path) != 1L || is.na(path) || !file.exists(path)) {
     stop("`path` must be an existing .qs2 file or directory.", call. = FALSE)
   }
+  assert_flag(quiet, "quiet")
   files <- if (dir.exists(path)) {
     list.files(path, pattern = "\\.qs2$", full.names = TRUE)
   } else {
@@ -273,10 +293,7 @@ import_geneset_cache <- function(path, quiet = FALSE) {
   rows <- manifest_files(manifest)
   for (i in seq_along(files)) {
     dst <- file.path(target, imported$file[[i]])
-    tmp <- tempfile(pattern = paste0(imported$file[[i]], "."), tmpdir = target,
-                    fileext = ".tmp")
-    file.copy(files[[i]], tmp, overwrite = TRUE)
-    file.rename(tmp, dst)
+    copy_cache_file(files[[i]], dst)
     rows <- rows[rows$file != imported$file[[i]], , drop = FALSE]
     rows <- rbind_rows(rows, data.frame(
       file = imported$file[[i]], md5 = md5_of(dst), origin = "import",
@@ -316,6 +333,8 @@ import_geneset_cache <- function(path, quiet = FALSE) {
 #' @export
 #' @family genesets
 export_geneset_cache <- function(dest, include_kegg_live = FALSE) {
+  assert_path(dest, "dest")
+  assert_flag(include_kegg_live, "include_kegg_live")
   src <- desk_geneset_dir()
   files <- list.files(src, pattern = GENESET_FILE_PATTERN, full.names = TRUE)
   if (length(files) == 0L) {
@@ -332,12 +351,14 @@ export_geneset_cache <- function(dest, include_kegg_live = FALSE) {
       next
     }
     out <- file.path(dest, basename(f))
-    file.copy(f, out, overwrite = TRUE)
+    copy_cache_file(f, out)
     written <- c(written, out)
   }
   if (file.exists(file.path(src, "MANIFEST.json"))) {
-    file.copy(file.path(src, "MANIFEST.json"), file.path(dest, "MANIFEST.json"),
-              overwrite = TRUE)
+    manifest <- read_manifest(src)
+    rows <- manifest_files(manifest)
+    manifest$files <- rows[rows$file %in% basename(written), , drop = FALSE]
+    write_manifest(dest, manifest)
   }
   if (length(skipped)) {
     message("Skipped live-KEGG table(s), which KEGG's licence does not allow ",

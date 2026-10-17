@@ -1,0 +1,49 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-backends.R","backends","every backend doctor() checks is a declared Import",1,0,FALSE,FALSE,0,0.00400000000000045,0.001,0.00600000000000023,1
+"test-backends.R","backends","every Import has an entry point, and every entry point exists",2,0,FALSE,FALSE,0,0.00999999999999979,0.002,0.0119999999999996,2
+"test-backends.R","backends","the shipped database and organism lists match omicsCore's",3,0,FALSE,FALSE,0,0.00199999999999978,0.001,0.00200000000000067,3
+"test-backends.R","backends","the expected file names are the ones omicsCore would look for",15,0,FALSE,FALSE,0,0.00999999999999979,0.005,0.0150000000000006,15
+"test-bundle-contract.R","bundle-contract","the installer script parses, defines the installer, and does not run on source()",5,0,FALSE,FALSE,0,0.00499999999999989,0.002,0.00700000000000056,5
+"test-bundle-contract.R","bundle-contract","the launchers start START.R, and START.R starts omicsDesk",5,0,FALSE,FALSE,0,0.00499999999999989,0.002,0.00700000000000056,5
+"test-bundle-contract.R","bundle-contract","the README template has every placeholder the builder fills",7,0,FALSE,FALSE,0,0.00499999999999989,0.003,0.00800000000000001,7
+"test-bundle-contract.R","bundle-contract","the prewarm script's collection map agrees with omicsCore's",15,0,FALSE,FALSE,0,0.00999999999999979,0.004,0.0150000000000006,15
+"test-bundle-contract.R","bundle-contract","the builder ships the files the installer and launchers expect",16,0,FALSE,FALSE,0,0.0140000000000002,0.005,0.0180000000000007,16
+"test-desktop-regressions.R","desktop-regressions","all upstream optional engine groups are available offline",1,0,FALSE,FALSE,0,0.00100000000000033,0.001,0.00100000000000033,1
+"test-desktop-regressions.R","desktop-regressions","an imported table survives status, doctor and launch preparation",3,0,FALSE,FALSE,0,3.027,0.057,3.184,3
+"test-desktop-regressions.R","desktop-regressions","an unchanged bundled table can be upgraded but unknown provenance is kept",3,0,FALSE,FALSE,0,0.004999999999999,0.003,0.00799999999999912,3
+"test-desktop-regressions.R","desktop-regressions","an explicit cache directory receives tables used by the app",3,0,FALSE,FALSE,0,0.753,0.018,0.771000000000001,3
+"test-desktop-regressions.R","desktop-regressions","desktop launches use independent workers and restore the plan on errors",7,0,FALSE,FALSE,0,0.676,0.013,1.037,7
+"test-desktop-regressions.R","desktop-regressions","invalid launch arguments fail before touching disk or starting workers",11,0,FALSE,FALSE,0,0.0459999999999994,0.001,0.0470000000000006,11
+"test-desktop-regressions.R","desktop-regressions","doctor starts a real process",2,0,FALSE,FALSE,0,0.327999999999999,0.002,0.616,2
+"test-desktop-regressions.R","desktop-regressions","integrity failures and platform mismatches stop before installation",6,0,FALSE,FALSE,0,0.0150000000000006,0.003,0.0169999999999995,6
+"test-doctor.R","doctor","doctor() reports every check and passes on a complete machine",10,0,FALSE,FALSE,0,0.764000000000001,0.022,0.880000000000001,10
+"test-doctor.R","doctor","a missing engine is named, with the fix",4,0,FALSE,FALSE,0,0.747,0.018,0.860999999999999,4
+"test-doctor.R","doctor","a bundle built for another R is caught",2,0,FALSE,FALSE,0,0.743,0.017,0.858,2
+"test-doctor.R","doctor","printing marks required failures and offers fixes",4,0,FALSE,FALSE,0,0.744,0.018,0.856999999999999,4
+"test-doctor.R","doctor","the worker check sees the same library",1,0,FALSE,FALSE,0,0.335000000000001,0.003,0.626000000000001,1
+"test-env.R","env","with_envvar() sets for the call and restores after it, including unset",3,0,FALSE,FALSE,0,0.00300000000000011,0.001,0.00300000000000011,3
+"test-env.R","env","with_envvar() restores even when the code errors",2,0,FALSE,FALSE,0,0.00300000000000011,0,0.00399999999999956,2
+"test-env.R","env","env_or() prefers a non-empty variable",2,0,FALSE,FALSE,0,0.00100000000000122,0,0.00300000000000011,2
+"test-genesets.R","genesets","the package ships all 14 tables and a manifest that matches them",18,0,FALSE,FALSE,0,0.0230000000000015,0.006,0.0279999999999987,18
+"test-genesets.R","genesets","sync copies the shipped tables once, then leaves them alone",6,0,FALSE,FALSE,0,0.0399999999999991,0.00900000000000001,0.0489999999999995,6
+"test-genesets.R","genesets","sync never overwrites a table the user changed",2,0,FALSE,FALSE,0,0.0400000000000009,0.01,0.0500000000000007,2
+"test-genesets.R","genesets","a file the user dropped in without a record is treated as theirs",3,0,FALSE,FALSE,0,0.0179999999999989,0.00700000000000001,0.0250000000000004,3
+"test-genesets.R","genesets","geneset_status() sees every table through omicsCore",5,0,FALSE,FALSE,0,0.685,0.015,0.698999999999998,5
+"test-genesets.R","genesets","import refuses bad names and unreadable tables before copying anything",5,0,FALSE,FALSE,0,0.0080000000000009,0.002,0.00900000000000034,5
+"test-genesets.R","genesets","import copies a valid table and records where it came from",9,0,FALSE,FALSE,0,0.00799999999999912,0.004,0.0120000000000005,9
+"test-genesets.R","genesets","import accepts a directory and validates all of it first",3,0,FALSE,FALSE,0,0.00399999999999956,0.002,0.0069999999999979,3
+"test-genesets.R","genesets","export leaves live-KEGG tables behind unless told otherwise",4,0,FALSE,FALSE,0,0.0080000000000009,0.002,0.0109999999999992,4
+"test-genesets.R","genesets","export with nothing to export says so",1,0,FALSE,FALSE,0,0.00200000000000067,0,0.00300000000000011,1
+"test-install.R","install","install_offline() installs from the bundle's repository into the given library",8,0,FALSE,FALSE,0,0.0860000000000003,0.0529999999999999,1.093,8
+"test-install.R","install","a bundle for another R minor version is refused unless forced",1,0,FALSE,FALSE,0,0.0109999999999992,0.003,0.253,1
+"test-install.R","install","a folder that is not a bundle is refused",1,0,FALSE,FALSE,0,0.00300000000000011,0,0.00300000000000011,1
+"test-install.R","install","first-party packages are replaced even when the same version is installed",2,0,FALSE,FALSE,0,0.0210000000000008,0.00800000000000001,1.707,2
+"test-launch.R","launch","desk_env() derives the app's variables from the desk folder",5,0,FALSE,FALSE,0,0.0199999999999996,0.00700000000000001,0.0259999999999998,5
+"test-launch.R","launch","online = TRUE leaves the refresh knobs alone",1,0,FALSE,FALSE,0,0.0170000000000012,0.006,0.0230000000000032,1
+"test-launch.R","launch","a data_dir argument and pre-set variables win over the defaults",3,0,FALSE,FALSE,0,0.0340000000000007,0.011,0.0450000000000017,3
+"test-launch.R","launch","a pandoc in the desk folder is offered to rmarkdown, unless the caller chose one",2,0,FALSE,FALSE,0,0.0399999999999991,0.00900000000000001,0.0480000000000018,2
+"test-launch.R","launch","launch() runs the app under the desk environment and restores it afterwards",10,0,FALSE,FALSE,0,0.0240000000000009,0.00800000000000001,0.032,10
+"test-launch.R","launch","launch(quiet = TRUE) prints nothing",1,0,FALSE,FALSE,0,0.016,0.005,0.022000000000002,1
+"test-paths.R","paths","the desk folder defaults to ~/omicsDesk and follows OMICSDESK_HOME",6,0,FALSE,FALSE,0,0.00399999999999956,0.001,0.00600000000000023,6
+"test-paths.R","paths","desk_paths() creates nothing",1,0,FALSE,FALSE,0,0.00100000000000122,0,0.00199999999999889,1
+"test-paths.R","paths","pandoc_in() finds an executable only where there is one",3,0,FALSE,FALSE,0,0.00199999999999889,0.001,0.00300000000000011,3

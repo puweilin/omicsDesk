@@ -1,0 +1,48 @@
+
+[ok] R version            R version 4.4.3 (2025-02-28)
+[ok] packages: engine     omicsCore 0.0.0.9000, omicsApp 0.0.0.9000
+[ok] packages: rnaseq     DESeq2 1.46.0, edgeR 4.4.2, limma 3.62.2, tximport 1.34.0, GenomicFeatures 1.58.0
+[ok] packages: proteomics vsn 3.74.0, pcaMethods 1.98.0, impute 1.80.0, imputeLCMD 2.1
+[ok] packages: enrichment clusterProfiler 4.14.6, msigdbr 26.1.0, fgsea 1.32.4, GSVA 2.0.7, enrichplot 1.26.6
+[ok] packages: integration ActivePathways 2.0.6
+[ok] packages: visualization ComplexHeatmap 2.22.0, circlize 0.4.17, ggrepel 0.9.8, ggpubr 0.6.3, plotly 4.12.0
+[ok] packages: report     rmarkdown 2.30, knitr 1.51
+[ok] packages: export     writexl 1.5.4, openxlsx 4.2.8.1, readxl 1.4.5, qs2 0.1.7
+[ok] upstream source      omicsCore f3c2ff412d72ce59dc07e6e812f97625d1fc27cd (with uncommitted changes); omicsApp f3c2ff412d72ce59dc07e6e812f97625d1fc27cd (with uncommitted changes)
+[ok] gene sets            14 of 14 tables readable in /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/home/genesets; MSigDB 2025.1 (msigdbr 25.1.1, built 2026-09-05)
+[ok] HTML reports         pandoc 3.9 at /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/home/pandoc/pandoc
+[ok] PDF reports          xelatex with Songti SC
+[ok] projects folder      /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/home/projects
+[ok] background worker    worker 18729 sees /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-405062acba8c/library
+
+Everything omicsDesk needs is here.
+PASS import
+Normalized 300 features x 12 samples with vsn
+PASS vsn_normalization
+PASS qc
+PASS limma
+PASS script_replay_fresh_process
+PASS ora
+using 'fgsea' for GSEA analysis, please cite Korotkevich et al (2019).
+
+preparing geneSet collections...
+GSEA analysis...
+leading edge analysis...
+done...
+PASS gsea
+PASS gsva
+PASS edger
+converting counts to integer mode
+PASS deseq2
+PASS integration
+PASS project_save
+PASS project_restore
+PASS workbook_export
+PASS html_report
+ACCEPTANCE OK: /private/tmp/omicsdesk-refresh-20261016/verified-release
+Warning messages:
+1: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
+  For some of the pathways the P-values were likely overestimated. For such pathways log2err is set to NA.
+2: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
+  For some pathways, in reality P-values are less than 1e-10. You can set the `eps` argument to zero for better estimation.
+BUNDLE OK

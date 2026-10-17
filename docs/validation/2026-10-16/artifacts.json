@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-16",
+  "omicsDesk_base": "b2df25e2a22f34357a6d9df5ebfaac6e59506fe7",
+  "omicsApp_base": "f3c2ff412d72ce59dc07e6e812f97625d1fc27cd",
+  "companion_changes": "Uncommitted working-tree fixes; preserved in companion-omicsApp.patch and in built source packages.",
+  "platform": "macOS arm64 / R 4.4.3 / Apple M4 Max / 128 GiB RAM",
+  "artifacts": {
+    "omicsDesk-0.1.0-R4.4-macos-arm64.zip": {
+      "bytes": 543353584,
+      "sha256": "3f6fddc2914804a1e72a90a2af02a5dc7c172482903846ca89e63d0599b6820d"
+    },
+    "omicsApp_0.0.0.9000.tar.gz": {
+      "bytes": 208797,
+      "sha256": "de717bb7acfaa25b4a15a34f703bf2d0ce1c2e3c1107071142866fc0b24e2fb2"
+    },
+    "omicsCore_0.0.0.9000.tar.gz": {
+      "bytes": 569199,
+      "sha256": "20da12dcdc30ff58b727f0b9d605baf2db069033533e5632570ea2eb12c3063a"
+    },
+    "omicsDesk_0.1.0.tar.gz": {
+      "bytes": 7928756,
+      "sha256": "d3df54c22a452ac3851f836a58b8e47239bdc2eab7fb4d66dbb8bcd8de13a54c"
+    }
+  },
+  "publication": {
+    "date": "2026-10-17",
+    "omicsApp_commit": "392c877eb3dc5b022db005966fa6bd48a6c20dfa",
+    "omicsApp_branch": "codex/desktop-offline-compatibility",
+    "omicsDesk_branch": "codex/local-edition-refresh",
+    "description_and_ci_pin": "392c877eb3dc5b022db005966fa6bd48a6c20dfa",
+    "main_integration": "pending; remote main diverges from the validated baseline",
+    "zip": "original validated artifact; not uploaded by git push"
+  }
+}

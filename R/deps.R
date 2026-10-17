@@ -13,11 +13,11 @@
 
 DESK_BACKENDS <- list(
   engine        = c("omicsCore", "omicsApp"),
-  rnaseq        = c("DESeq2", "edgeR", "limma"),
+  rnaseq        = c("DESeq2", "edgeR", "limma", "tximport", "GenomicFeatures"),
   proteomics    = c("vsn", "pcaMethods", "impute", "imputeLCMD"),
   enrichment    = c("clusterProfiler", "msigdbr", "fgsea", "GSVA", "enrichplot"),
   integration   = c("ActivePathways"),
-  visualization = c("ComplexHeatmap", "circlize", "ggrepel", "plotly"),
+  visualization = c("ComplexHeatmap", "circlize", "ggrepel", "ggpubr", "plotly"),
   report        = c("rmarkdown", "knitr"),
   export        = c("writexl", "openxlsx", "readxl", "qs2")
 )
@@ -34,6 +34,8 @@ backend_entrypoints <- function() {
     DESeq2          = DESeq2::DESeq,
     edgeR           = edgeR::glmQLFit,
     limma           = limma::lmFit,
+    tximport        = tximport::tximport,
+    GenomicFeatures = GenomicFeatures::transcripts,
     vsn             = vsn::vsn2,
     pcaMethods      = pcaMethods::pca,
     impute          = impute::impute.knn,
@@ -47,6 +49,7 @@ backend_entrypoints <- function() {
     ComplexHeatmap  = ComplexHeatmap::Heatmap,
     circlize        = circlize::colorRamp2,
     ggrepel         = ggrepel::geom_text_repel,
+    ggpubr          = ggpubr::ggarrange,
     plotly          = plotly::plot_ly,
     rmarkdown       = rmarkdown::render,
     knitr           = knitr::kable,

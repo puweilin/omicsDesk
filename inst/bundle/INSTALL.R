@@ -18,6 +18,8 @@
 
 file_url <- function(path) {
   path <- normalizePath(path, winslash = "/", mustWork = TRUE)
+  # utils handles a local file repository as a literal filesystem path.
+  # Percent-encoding it makes available.packages() look for literal %20.
   if (.Platform$OS.type == "windows") paste0("file:///", path) else paste0("file://", path)
 }
 
@@ -38,7 +40,40 @@ read_bundle_info <- function(bundle_dir) {
     stop("No BUNDLE file in ", bundle_dir,
          "; is this an unzipped omicsDesk bundle?", call. = FALSE)
   }
-  as.list(read.dcf(path)[1L, ])
+  d <- read.dcf(path)
+  required <- c("Bundle", "Version", "RMinor", "Platform", "Packages")
+  if (nrow(d) != 1L || !all(required %in% colnames(d)) ||
+      anyNA(d[1L, required]) || !identical(unname(d[1L, "Bundle"]), "omicsDesk")) {
+    stop("Invalid BUNDLE record in ", bundle_dir, call. = FALSE)
+  }
+  as.list(d[1L, ])
+}
+
+verify_bundle_integrity <- function(bundle_dir, required = FALSE) {
+  manifest <- file.path(bundle_dir, "MD5SUMS")
+  if (!file.exists(manifest)) {
+    if (required) stop("Missing MD5SUMS in bundle.", call. = FALSE)
+    return(invisible(TRUE))
+  }
+  lines <- readLines(manifest, warn = FALSE)
+  if (!length(lines) || any(!grepl("^[0-9a-fA-F]{32}  .+$", lines))) {
+    stop("Invalid MD5SUMS in bundle.", call. = FALSE)
+  }
+  expected <- tolower(substr(lines, 1L, 32L))
+  paths <- substring(lines, 35L)
+  if (anyDuplicated(paths) || any(grepl("(^[/\\\\]|^[A-Za-z]:|(^|[/\\\\])\\.\\.([/\\\\]|$))", paths))) {
+    stop("Unsafe or duplicate paths in MD5SUMS.", call. = FALSE)
+  }
+  files <- file.path(bundle_dir, paths)
+  resolved <- normalizePath(files, winslash = "/", mustWork = FALSE)
+  prefix <- paste0(normalizePath(bundle_dir, winslash = "/"), "/")
+  if (any(!startsWith(resolved, prefix)) || any(!file.exists(files)) || any(dir.exists(files))) {
+    stop("Missing or unsafe files in bundle MD5SUMS.", call. = FALSE)
+  }
+  actual <- unname(tools::md5sum(files))
+  bad <- paths[is.na(actual) | actual != expected]
+  if (length(bad)) stop("Bundle checksum mismatch: ", paste(bad, collapse = ", "), call. = FALSE)
+  invisible(TRUE)
 }
 
 # "pkgA (1.0), pkgB, pkgC (2.1.3)" -> data.frame(package, version)
@@ -53,8 +88,20 @@ parse_package_field <- function(field) {
 
 install_offline_bundle <- function(bundle_dir = ".", lib = NULL,
                                    force = FALSE, quiet = FALSE) {
+  for (name in c("force", "quiet")) {
+    value <- get(name)
+    if (!is.logical(value) || length(value) != 1L || is.na(value)) {
+      stop("`", name, "` must be TRUE or FALSE.", call. = FALSE)
+    }
+  }
   bundle_dir <- normalizePath(bundle_dir, winslash = "/", mustWork = TRUE)
   info <- read_bundle_info(bundle_dir)
+  verify_bundle_integrity(bundle_dir, required = identical(info$BundleFormat, "2"))
+
+  if (!identical(info$Platform, R.version$platform)) {
+    stop("This bundle is for ", info$Platform, "; this R uses ", R.version$platform,
+         ". Use a bundle for this platform.", call. = FALSE)
+  }
 
   if (!identical(info$RMinor, r_minor()) && !isTRUE(force)) {
     stop(sprintf(paste0(
@@ -71,6 +118,9 @@ install_offline_bundle <- function(bundle_dir = ".", lib = NULL,
   if (nrow(pkgs) == 0L) stop("The BUNDLE file lists no packages.", call. = FALSE)
 
   lib <- lib %||% .libPaths()[[1L]]
+  if (!is.character(lib) || length(lib) != 1L || is.na(lib) || !nzchar(lib)) {
+    stop("`lib` must be a non-empty path.", call. = FALSE)
+  }
   if (!dir.exists(lib)) dir.create(lib, recursive = TRUE)
   lib <- normalizePath(lib, winslash = "/")
   .libPaths(c(lib, .libPaths()))
@@ -85,6 +135,9 @@ install_offline_bundle <- function(bundle_dir = ".", lib = NULL,
     is.na(v) || package_version(have_ver[[p]]) >= package_version(v)
   }, logical(1))
   todo <- if (isTRUE(force)) pkgs$package else pkgs$package[!up_to_date]
+  # Development releases can share a version number while carrying different
+  # code. Always replace the three application packages when upgrading.
+  todo <- unique(c(todo, intersect(pkgs$package, c("omicsCore", "omicsApp", "omicsDesk"))))
 
   # Two passes, not type = "both": with "both", R treats the source index
   # as the master list and calls every binary-only package "not available".
@@ -104,7 +157,8 @@ install_offline_bundle <- function(bundle_dir = ".", lib = NULL,
   } else character()
   bin_todo <- intersect(todo, in_binary_index)
   src_todo <- setdiff(todo, in_binary_index)
-  ncpus <- max(1L, parallel::detectCores() - 1L)
+  cores <- parallel::detectCores()
+  ncpus <- if (is.na(cores)) 1L else max(1L, min(2L, cores - 1L))
 
   if (length(todo) == 0L) {
     message("All ", nrow(pkgs), " packages are already installed at the bundled ",
@@ -126,9 +180,13 @@ install_offline_bundle <- function(bundle_dir = ".", lib = NULL,
 
   # Check the target library itself: another library on the path may hold
   # an older copy of a package that failed here, and would hide the failure.
-  in_lib <- rownames(utils::installed.packages(lib.loc = lib))
+  target <- utils::installed.packages(lib.loc = lib)
   anywhere <- rownames(utils::installed.packages(lib.loc = .libPaths()))
-  failed <- setdiff(todo, in_lib)
+  failed <- todo[vapply(todo, function(p) {
+    if (!p %in% rownames(target)) return(TRUE)
+    version <- pkgs$version[match(p, pkgs$package)]
+    !is.na(version) && package_version(target[p, "Version"]) < package_version(version)
+  }, logical(1))]
   missing <- setdiff(pkgs$package, anywhere)
   if (length(failed) > 0L || length(missing) > 0L) {
     stop("These packages did not install: ",
@@ -149,12 +207,14 @@ install_offline_bundle <- function(bundle_dir = ".", lib = NULL,
   }
   record <- read.dcf(file.path(bundle_dir, "BUNDLE"))
   record <- cbind(record, Library = lib, Installed = format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
-  write.dcf(record, file.path(home, "BUNDLE"))
+  # Folding a long path at a space writes a newline into the value read
+  # by START.R, so a valid custom library would disappear on restart.
+  write.dcf(record, file.path(home, "BUNDLE"), keep.white = "Library")
 
   message("\nomicsDesk ", info$Version %||% "", " is installed.",
           "\n  library: ", lib,
           "\n  folder:  ", home,
-          "\n\nNext, in R:  omicsDesk::doctor()  then  omicsDesk::launch()",
+          "\n\nRestart R after an upgrade. Then run omicsDesk::doctor() and omicsDesk::launch().",
           "\n(or double-click the launcher next to this script).")
   invisible(list(lib = lib, installed = pkgs$package, home = home))
 }

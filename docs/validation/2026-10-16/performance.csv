@@ -1,0 +1,9 @@
+"step","elapsed_seconds","budget_seconds"
+"prepare_first_launch",0.031,5
+"prepare_warm_launch",0.027,1
+"genesets_cold_process",1.925,20
+"genesets_memory_hit",0.00300000000000011,0.25
+"import_63241x258",2.034,60
+"pca_63241x258",6.509,20
+"limma_20000x258",0.238000000000001,30
+"remask_63241",0.000999999999999446,0.25

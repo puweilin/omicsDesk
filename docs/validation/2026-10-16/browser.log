@@ -1,0 +1,6 @@
+PASS seven desktop views
+PASS browser upload, VSN, applied QC, real background limma and numeric comparison
+PASS browser offline enrichment
+PASS browser script, workbook and HTML downloads
+PASS desktop restart and project recovery
+BROWSER OK

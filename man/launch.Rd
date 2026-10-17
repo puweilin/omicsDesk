@@ -26,8 +26,9 @@ launch(
 \item{browser}{Open the default browser. Default \code{interactive()};
 the bundle's launchers pass \code{TRUE}.}
 
-\item{workers}{Background R processes for long analyses, as in
-\code{\link[omicsApp:launch]{omicsApp::launch()}}.}
+\item{workers}{Number of independent background R processes for long
+analyses (default 2). Desktop mode uses \code{future::multisession},
+including on macOS. \code{0} preserves the caller's future plan.}
 
 \item{online}{Set \code{TRUE} on a networked machine to allow the KEGG
 auto-refresh and live \code{refresh_geneset_cache()} calls.}

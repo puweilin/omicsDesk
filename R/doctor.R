@@ -18,6 +18,8 @@
 #' doctor()
 #' }
 doctor <- function(workers = TRUE, quiet = FALSE) {
+  assert_flag(workers, "workers")
+  assert_flag(quiet, "quiet")
   rows <- list()
   add <- function(check, ok, detail = "", fix = "", required = TRUE) {
     rows[[length(rows) + 1L]] <<- data.frame(
@@ -51,6 +53,17 @@ doctor <- function(workers = TRUE, quiet = FALSE) {
     }
     add(paste0("packages: ", group), all(present), detail,
         "run the bundle's INSTALL.R again, or omicsDesk::install_offline(<bundle>)")
+  }
+
+  if (!is.null(bundle$OmicsAppSha) && nzchar(bundle$OmicsAppSha)) {
+    source <- vapply(c("omicsCore", "omicsApp"), function(pkg) {
+      value <- utils::packageDescription(pkg, fields = "Config/omicsDesk/SourceSHA")
+      if (length(value) != 1L || is.na(value)) "unrecorded" else gsub("[[:space:]]+", " ", trimws(value))
+    }, character(1))
+    ref <- gsub("[[:space:]]+", " ", trimws(bundle$OmicsAppSha))
+    add("upstream source", all(source == ref),
+        paste(names(source), source, collapse = "; "),
+        "reinstall this bundle and restart R so the matching packages are loaded")
   }
 
   # ---- gene sets --------------------------------------------------------
@@ -91,16 +104,14 @@ doctor <- function(workers = TRUE, quiet = FALSE) {
   add("HTML reports", pandoc$ok, pandoc$detail,
       sprintf("copy the bundle's pandoc/ folder to %s", desk_pandoc_dir()))
 
-  latex <- Sys.which(c("pdflatex", "xelatex"))
-  latex <- latex[nzchar(latex)]
-  add("PDF reports", length(latex) > 0L,
-      if (length(latex)) paste("LaTeX at", latex[[1L]])
-      else "no LaTeX engine; PDF reports are unavailable, HTML still works",
-      "install a LaTeX distribution, or print the HTML report to PDF from the browser",
+  pdf <- omicsCore::pdf_toolchain_status()
+  add("PDF reports", pdf$ok,
+      if (isTRUE(pdf$ok)) paste(pdf$engine, "with", pdf$cjk_font) else pdf$message,
+      "install XeLaTeX and a CJK font, or print the HTML report to PDF from the browser",
       required = FALSE)
 
   # ---- data folder --------------------------------------------------------
-  data_dir <- desk_data_dir()
+  data_dir <- path.expand(env_or("OMICSAPP_DATA_DIR", desk_data_dir()))
   writable <- tryCatch({
     ensure_dir(data_dir)
     probe <- tempfile(pattern = ".doctor-", tmpdir = data_dir)
@@ -127,14 +138,20 @@ doctor <- function(workers = TRUE, quiet = FALSE) {
 }
 
 check_worker <- function() {
-  previous <- future::plan(future::multisession, workers = 1L)
+  previous <- future::plan(future::multisession, workers = I(1L))
   on.exit(future::plan(previous), add = TRUE)
+  parent_pid <- Sys.getpid()
+  libs <- .libPaths()
   seen <- future::value(future::future({
-    list(lib = .libPaths()[[1L]],
-         core = requireNamespace("omicsCore", quietly = TRUE))
-  }))
-  if (isTRUE(seen$core)) {
-    list(ok = TRUE, detail = paste("worker started and sees", seen$lib))
+    list(pid = Sys.getpid(), lib = .libPaths()[[1L]],
+         core = requireNamespace("omicsCore", quietly = TRUE),
+         app = requireNamespace("omicsApp", quietly = TRUE))
+  }, seed = TRUE))
+  separate <- !identical(seen$pid, parent_pid)
+  same_lib <- identical(seen$lib, libs[[1L]])
+  if (isTRUE(seen$core) && isTRUE(seen$app) && separate && same_lib) {
+    list(ok = TRUE, detail = paste("worker", seen$pid, "sees", seen$lib),
+         pid = seen$pid, parent_pid = parent_pid)
   } else {
     list(ok = FALSE, detail = paste("worker started but cannot load omicsCore from",
                                     seen$lib))

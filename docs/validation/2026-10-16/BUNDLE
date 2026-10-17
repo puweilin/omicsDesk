@@ -1,0 +1,89 @@
+Bundle: omicsDesk
+BundleFormat: 2
+Version: 0.1.0
+Built: 2026-10-16 14:28:33
+Platform: aarch64-apple-darwin20
+OS: macos-arm64
+RVersion: 4.4.3
+RMinor: 4.4
+BiocVersion: 3.20
+GitSha: b2df25e2a22f34357a6d9df5ebfaac6e59506fe7
+OmicsAppSource: local checkout /Users/puweilin/SciProject/CHISSS/omicsApp
+OmicsAppSha: f3c2ff412d72ce59dc07e6e812f97625d1fc27cd (with uncommitted
+        changes)
+Pandoc: 3.9
+Genesets: MSigDB 2025.1 via msigdbr 25.1.1, built 2026-09-05T08:01:27Z
+Packages: abind (1.4-8), ActivePathways (2.0.6), affy (1.84.0), affyio
+        (1.76.0), annotate (1.84.0), AnnotationDbi (1.68.0), ape (5.8-1), aplot
+        (0.2.9), askpass (1.2.1), assertthat (0.2.1), assorthead (1.0.1),
+        babelgene (22.9), backports (1.5.0), base64enc (0.1-6), beachmat
+        (2.22.0), BH (1.90.0-1), Biobase (2.66.0), BiocFileCache (2.14.0),
+        BiocGenerics (0.52.0), BiocIO (1.16.0), BiocManager (1.30.27),
+        BiocParallel (1.40.2), BiocSingular (1.22.0), Biostrings (2.74.1), bit
+        (4.6.0), bit64 (4.6.0-1), bitops (1.0-9), blob (1.3.0), boot (1.3-32),
+        broom (1.0.12), bsicons (0.1.2), bslib (0.10.0), cachem (1.1.0), car
+        (3.1-5), carData (3.0-6), cellranger (1.1.0), circlize (0.4.17), cli
+        (3.6.5), clue (0.3-67), cluster (2.1.8.2), clusterProfiler (4.14.6),
+        codetools (0.2-20), colorspace (2.1-2), commonmark (2.0.0),
+        ComplexHeatmap (2.22.0), corrplot (0.95), cowplot (1.2.0), cpp11
+        (0.5.3), crayon (1.5.3), crosstalk (1.2.2), curl (7.0.0), data.table
+        (1.18.2.1), DBI (1.3.0), dbplyr (2.5.1), DelayedArray (0.32.0),
+        DelayedMatrixStats (1.28.1), Deriv (4.2.0), DESeq2 (1.46.0), digest
+        (0.6.39), doBy (4.7.1), doParallel (1.0.17), DOSE (4.0.1), dplyr
+        (1.2.0), DT (0.34.0), edgeR (4.4.2), enrichplot (1.26.6), evaluate
+        (1.0.5), farver (2.1.2), fastmap (1.2.0), fastmatch (1.1-8), fgsea
+        (1.32.4), filelock (1.0.3), fontawesome (0.5.3), foreach (1.5.2),
+        forecast (9.0.2), formatR (1.14), Formula (1.2-5), fracdiff (1.5-3), fs
+        (1.6.7), futile.logger (1.4.9), futile.options (1.0.1), future
+        (1.70.0), generics (0.1.4), GenomeInfoDb (1.42.3), GenomeInfoDbData
+        (1.2.13), GenomicAlignments (1.42.0), GenomicFeatures (1.58.0),
+        GenomicRanges (1.58.0), GetoptLong (1.1.0), ggforce (0.5.0), ggfun
+        (0.2.0), ggnewscale (0.5.2), ggplot2 (4.0.2), ggplotify (0.1.3), ggpubr
+        (0.6.3), ggrepel (0.9.8), ggsci (4.2.0), ggsignif (0.6.4), ggtangle
+        (0.1.1), ggtree (3.14.0), GlobalOptions (0.1.3), globals (0.19.1), glue
+        (1.8.0), gmm (1.9-1), GO.db (3.20.0), GOSemSim (2.32.0), graph
+        (1.84.1), gridExtra (2.3), gridGraphics (0.5-1), GSEABase (1.68.0),
+        gson (0.1.0), GSVA (2.0.7), gtable (0.3.6), HDF5Array (1.34.0), highr
+        (0.12), hms (1.1.4), htmltools (0.5.9), htmlwidgets (1.6.4), httpuv
+        (1.6.17), httr (1.4.8), igraph (2.2.2), impute (1.80.0), imputeLCMD
+        (2.1), IRanges (2.40.1), irlba (2.3.7), isoband (0.3.0), iterators
+        (1.0.14), jquerylib (0.1.4), jsonlite (2.0.0), KEGGREST (1.46.0), knitr
+        (1.51), labeling (0.4.3), lambda.r (1.2.4), later (1.4.8), lattice
+        (0.22-9), lazyeval (0.2.2), lifecycle (1.0.5), limma (3.62.2), listenv
+        (0.10.1), lme4 (2.0-1), lmtest (0.9-40), locfit (1.5-9.12), magick
+        (2.9.1), magrittr (2.0.4), MASS (7.3-65), Matrix (1.7-5),
+        MatrixGenerics (1.18.1), MatrixModels (0.5-4), matrixStats (1.5.0),
+        memoise (2.0.1), mgcv (1.9-4), microbenchmark (1.5.0), mime (0.13),
+        minqa (1.2.8), modelr (0.1.11), msigdbr (26.1.0), mvtnorm (1.3-6), nlme
+        (3.1-168), nloptr (2.2.1), nnet (7.3-20), norm (1.0-11.1), numDeriv
+        (2016.8-1.1), omicsApp (0.0.0.9000), omicsCore (0.0.0.9000), omicsDesk
+        (0.1.0), openssl (2.3.5), openxlsx (4.2.8.1), otel (0.2.0), parallelly
+        (1.46.1), patchwork (1.3.2), pbkrtest (0.5.5), pcaMethods (1.98.0),
+        pillar (1.11.1), pkgconfig (2.0.3), plotly (4.12.0), plyr (1.8.9), png
+        (0.1-9), polyclip (1.10-7), polynom (1.4-1), preprocessCore (1.68.0),
+        prettyunits (1.2.0), progress (1.2.3), promises (1.5.0), purrr (1.2.1),
+        qs2 (0.1.7), quantreg (6.1), qvalue (2.38.0), R.methodsS3 (1.8.2), R.oo
+        (1.27.1), R.utils (2.13.0), R6 (2.6.1), rappdirs (0.3.4), rbibutils
+        (2.4.1), RColorBrewer (1.1-3), Rcpp (1.1.1), RcppArmadillo (15.2.4-1),
+        RcppEigen (0.3.4.0.2), RcppParallel (5.1.11-2), RCurl (1.98-1.18),
+        Rdpack (2.6.6), readxl (1.4.5), reformulas (0.4.4), rematch (2.0.0),
+        reshape2 (1.4.5), restfulr (0.0.16), rhdf5 (2.50.2), rhdf5filters
+        (1.18.1), Rhdf5lib (1.28.0), Rhtslib (3.2.0), rjson (0.2.23), rlang
+        (1.1.7), rmarkdown (2.30), Rsamtools (2.22.0), RSQLite (2.4.6), rstatix
+        (0.7.3), rsvd (1.0.5), rtracklayer (1.66.0), S4Arrays (1.6.0),
+        S4Vectors (0.44.0), S7 (0.2.1), sandwich (3.1-1), sass (0.4.10),
+        ScaledMatrix (1.14.0), scales (1.4.0), scatterpie (0.2.6), shape
+        (1.4.6.1), shiny (1.13.0), shinyjs (2.1.1), shinyWidgets (0.9.1),
+        SingleCellExperiment (1.28.1), snow (0.4-4), sourcetools (0.1.7-1),
+        SparseArray (1.6.2), SparseM (1.84-2), sparseMatrixStats (1.18.0),
+        SpatialExperiment (1.16.0), statmod (1.5.1), stringfish (0.18.0),
+        stringi (1.8.7), stringr (1.6.0), SummarizedExperiment (1.36.0),
+        survival (3.8-6), sys (3.4.3), systemfonts (1.3.2), tibble (3.3.1),
+        tidyr (1.3.2), tidyselect (1.2.1), tidytree (0.4.7), timeDate
+        (4052.112), tinytex (0.58), tmvtnorm (1.7), treeio (1.30.0), tweenr
+        (2.0.3), tximport (1.34.0), UCSC.utils (1.2.0), urca (1.3-4), utf8
+        (1.2.6), vctrs (0.7.2), viridisLite (0.4.3), vsn (3.74.0), withr
+        (3.0.2), writexl (1.5.4), xfun (0.57), XML (3.99-0.23), xtable (1.8-8),
+        XVector (0.46.0), yaml (2.3.12), yulab.utils (0.2.4), zip (2.3.3),
+        zlibbioc (1.52.0), zoo (1.8-15)
+SourceOnly:

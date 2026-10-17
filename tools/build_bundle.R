@@ -38,6 +38,8 @@ script_path <- sub("^--file=", "", grep("^--file=", commandArgs(), value = TRUE)
 root <- if (length(script_path)) normalizePath(file.path(dirname(script_path[[1L]]), "..")) else normalizePath(".")
 
 out_dir <- get_arg("--out", file.path(root, "dist"))
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+out_dir <- normalizePath(out_dir, mustWork = TRUE)
 pandoc_arg <- get_arg("--pandoc", NULL)
 
 if (!requireNamespace("pak", quietly = TRUE)) stop("pak is needed: install.packages('pak')")
@@ -83,7 +85,9 @@ omicsapp_ref <- get_arg("--omicsapp-ref", NULL)
 if (!is.null(omicsapp_arg) && !is.null(omicsapp_ref)) stop("Pass --omicsapp or --omicsapp-ref, not both.")
 if (is.null(omicsapp_arg) && is.null(omicsapp_ref)) {
   default_dir <- file.path(root, "..", "omicsApp")
-  if (dir.exists(default_dir)) omicsapp_arg <- default_dir else omicsapp_ref <- "main"
+  if (dir.exists(default_dir)) omicsapp_arg <- default_dir else {
+    omicsapp_ref <- read.dcf(file.path(root, "DESCRIPTION"))[1L, "Config/omicsDesk/UpstreamRef"]
+  }
 }
 if (!is.null(omicsapp_arg)) {
   omicsapp_dir <- normalizePath(omicsapp_arg, mustWork = FALSE)
@@ -91,9 +95,10 @@ if (!is.null(omicsapp_arg)) {
   omicsapp_sha <- local_sha(omicsapp_dir)
 } else {
   message("Fetching omicsApp@", omicsapp_ref, " from GitHub")
-  omicsapp_dir <- fetch_omicsapp(omicsapp_ref, file.path(out_dir, "omicsApp-src"))
-  omicsapp_source <- paste0(OMICSAPP_REPO, " @ ", omicsapp_ref)
   omicsapp_sha <- github_sha(omicsapp_ref)
+  if (!nzchar(omicsapp_sha)) stop("Cannot resolve omicsApp ref: ", omicsapp_ref)
+  omicsapp_dir <- fetch_omicsapp(omicsapp_sha, file.path(out_dir, "omicsApp-src"))
+  omicsapp_source <- paste0(OMICSAPP_REPO, " @ ", omicsapp_ref)
 }
 message("  omicsApp from ", omicsapp_source, if (nzchar(omicsapp_sha)) paste0(" (", omicsapp_sha, ")") else "")
 
@@ -109,6 +114,16 @@ for (nm in names(pkg_dirs)) {
 }
 if (length(list.files(file.path(root, "inst", "genesets"), pattern = "\\.qs2$")) == 0L) {
   stop("inst/genesets is empty; run tools/prewarm_genesets.R first.")
+}
+geneset_helpers <- new.env(parent = baseenv())
+sys.source(file.path(root, "R", "genesets.R"), envir = geneset_helpers)
+expected_genesets <- geneset_helpers$expected_geneset_files()
+geneset_dir <- file.path(root, "inst", "genesets")
+geneset_manifest <- jsonlite::fromJSON(file.path(geneset_dir, "MANIFEST.json"))$files
+if (!setequal(geneset_manifest$file, expected_genesets) ||
+    any(!file.exists(file.path(geneset_dir, expected_genesets))) ||
+    any(unname(tools::md5sum(file.path(geneset_dir, geneset_manifest$file))) != geneset_manifest$md5)) {
+  stop("Bundled gene-set tables are incomplete or differ from MANIFEST.json.")
 }
 
 # ---- naming -------------------------------------------------------------------
@@ -152,17 +167,30 @@ dir.create(build_dir, recursive = TRUE, showWarnings = FALSE)
 for (nm in names(pkg_dirs)) {
   message("  R CMD build ", nm)
   r_bin <- file.path(R.home("bin"), if (is_windows) "R.exe" else "R")
+  work <- tempfile(paste0(nm, "-"), tmpdir = build_dir)
+  dir.create(work)
+  input <- pkg_dirs[[nm]]
+  if (nm != "omicsDesk") {
+    if (!file.copy(input, work, recursive = TRUE)) stop("Could not stage ", nm)
+    input <- file.path(work, nm)
+    metadata <- read.dcf(file.path(input, "DESCRIPTION"))
+    metadata <- cbind(metadata, `Config/omicsDesk/SourceSHA` = omicsapp_sha)
+    write.dcf(metadata, file.path(input, "DESCRIPTION"))
+  }
+  old_wd <- setwd(work)
   status <- system2(r_bin, c("CMD", "build", "--no-build-vignettes", "--no-manual",
-                             shQuote(pkg_dirs[[nm]])),
+                             shQuote(input)),
                     stdout = file.path(build_dir, paste0(nm, ".log")),
                     stderr = file.path(build_dir, paste0(nm, ".log")))
+  setwd(old_wd)
   if (!identical(status, 0L)) {
     stop("R CMD build failed for ", nm, "; see ", file.path(build_dir, paste0(nm, ".log")))
   }
   # R CMD build writes into the working directory.
-  tarball <- list.files(getwd(), pattern = paste0("^", nm, "_.*\\.tar\\.gz$"), full.names = TRUE)
+  tarball <- list.files(work, pattern = paste0("^", nm, "_.*\\.tar\\.gz$"), full.names = TRUE)
   if (length(tarball) != 1L) stop("Expected one tarball for ", nm, ", found ", length(tarball))
-  file.rename(tarball, file.path(src_contrib, basename(tarball)))
+  if (!file.rename(tarball, file.path(src_contrib, basename(tarball)))) stop("Could not stage ", nm)
+  unlink(work, recursive = TRUE)
 }
 
 # ---- 2. the dependency closure ----------------------------------------------
@@ -237,9 +265,44 @@ if (!is.null(bin_index)) {
 
 # Every package the closure needs must be in the repository, or the
 # installer fails on the user's machine instead of here.
-closure <- tryCatch(pak::pkg_deps(direct, dependencies = NA)$package, error = function(e) character())
+all_indexes <- list(index, if (!is.null(bin_index)) bi)
+all_indexes <- Filter(Negate(is.null), all_indexes)
+columns <- unique(unlist(lapply(all_indexes, colnames)))
+db <- do.call(rbind, lapply(all_indexes, function(x) {
+  out <- matrix(NA_character_, nrow(x), length(columns), dimnames = list(NULL, columns))
+  out[, colnames(x)] <- x
+  out
+}))
+rownames(db) <- db[, "Package"]
+closure <- unique(unlist(tools::package_dependencies(names(pkg_dirs), db = db,
+                                                    which = dep_fields, recursive = TRUE)))
 missing <- setdiff(c(direct, closure), c(all_pkgs$Package, base_pkgs))
 if (length(missing) > 0L) stop("Not in the repository: ", paste(missing, collapse = ", "))
+
+# Reused downloads can be complete by name while holding binaries too old for
+# a newer source package. Check version constraints without a network query.
+versions <- stats::setNames(all_pkgs$Version, all_pkgs$Package)
+base_db <- installed.packages(priority = c("base", "recommended"))
+versions <- c(versions, stats::setNames(base_db[, "Version"], base_db[, "Package"]),
+              R = as.character(getRversion()))
+versions <- versions[!duplicated(names(versions))]
+for (i in seq_len(nrow(db))) {
+  for (field in intersect(dep_fields, colnames(db))) {
+    if (is.na(db[i, field])) next
+    specs <- trimws(strsplit(db[i, field], ",", fixed = TRUE)[[1L]])
+    for (spec in specs) {
+      parsed <- regmatches(spec, regexec("^([A-Za-z][A-Za-z0-9.]*)\\s*\\((>=|<=|==|!=|>|<)\\s*([^()[:space:]]+)\\)$", spec))[[1L]]
+      if (length(parsed) != 4L) next
+      available <- unname(versions[parsed[[2L]]])
+      if (is.na(available)) stop("Missing dependency ", spec, " for ", db[i, "Package"])
+      cmp <- utils::compareVersion(available, parsed[[4L]])
+      valid <- switch(parsed[[3L]], `>=` = cmp >= 0, `<=` = cmp <= 0,
+                       `==` = cmp == 0, `!=` = cmp != 0, `>` = cmp > 0, `<` = cmp < 0)
+      if (!valid) stop("Dependency version mismatch: ", db[i, "Package"], " needs ", spec,
+                       "; bundle has ", available)
+    }
+  }
+}
 
 # ---- 4. pandoc ---------------------------------------------------------------
 
@@ -267,7 +330,7 @@ if (nzchar(pandoc_exe) && file.exists(pandoc_exe)) {
 # ---- 5. installer, launchers, records -------------------------------------
 
 bundle_src <- file.path(root, "inst", "bundle")
-for (f in c("INSTALL.R", "START.R", "omicsDesk.bat", "omicsDesk.command")) {
+for (f in c("INSTALL.R", "START.R", "VERIFY.R", "omicsDesk.bat", "omicsDesk.command")) {
   file.copy(file.path(bundle_src, f), file.path(bundle_dir, f), overwrite = TRUE)
 }
 Sys.chmod(file.path(bundle_dir, "omicsDesk.command"), "0755")
@@ -277,6 +340,7 @@ git_sha <- tryCatch(suppressWarnings(system2("git", c("-C", shQuote(root), "rev-
 genesets <- tryCatch(jsonlite::fromJSON(file.path(root, "inst", "genesets", "MANIFEST.json")), error = function(e) NULL)
 record <- rbind(c(
   Bundle = "omicsDesk",
+  BundleFormat = "2",
   Version = version,
   Built = format(Sys.time(), "%Y-%m-%d %H:%M:%S", tz = "UTC"),
   Platform = R.version$platform,
@@ -309,7 +373,7 @@ writeLines(readme, file.path(bundle_dir, "README.md"))
 
 all_files <- list.files(bundle_dir, recursive = TRUE, full.names = TRUE)
 sums <- tools::md5sum(all_files)
-writeLines(sprintf("%s  %s", sums, sub(paste0("^", bundle_dir, "/"), "", names(sums))),
+writeLines(sprintf("%s  %s", sums, substring(names(sums), nchar(bundle_dir) + 2L)),
            file.path(bundle_dir, "MD5SUMS"))
 
 # ---- 6. zip --------------------------------------------------------------------
@@ -319,15 +383,16 @@ message(sprintf("  %d packages, %.0f MB unpacked", nrow(all_pkgs), size_mb))
 if (!has_flag("--no-zip")) {
   zip_path <- file.path(out_dir, paste0(name, ".zip"))
   if (file.exists(zip_path)) unlink(zip_path)
-  old <- setwd(out_dir); on.exit(setwd(old), add = TRUE)
+  old <- setwd(out_dir)
   if (nzchar(Sys.which("zip"))) {
     utils::zip(basename(zip_path), name, flags = "-r9Xq")
   } else if (requireNamespace("zip", quietly = TRUE)) {
     zip::zip(basename(zip_path), name, mode = "mirror")
   } else {
-    message("  ! no zip tool found; the bundle folder is left unzipped")
+    stop("No zip tool found. Install zip or pass --no-zip.")
   }
   setwd(old)
-  if (file.exists(zip_path)) message(sprintf("  %s (%.0f MB)", zip_path, file.size(zip_path) / 1024^2))
+  if (!file.exists(zip_path)) stop("ZIP creation failed: ", zip_path)
+  message(sprintf("  %s (%.0f MB)", zip_path, file.size(zip_path) / 1024^2))
 }
 message("Done: ", bundle_dir)

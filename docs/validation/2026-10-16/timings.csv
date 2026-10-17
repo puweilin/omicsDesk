@@ -1,0 +1,16 @@
+"step","elapsed_seconds"
+"import",0.0450000000000017
+"vsn_normalization",0.0159999999999982
+"qc",0.00500000000000256
+"limma",0.0109999999999992
+"script_replay_fresh_process",0.988
+"ora",0.0199999999999996
+"gsea",1.498
+"gsva",0.0330000000000013
+"edger",0.0380000000000003
+"deseq2",0.529
+"integration",0.0180000000000007
+"project_save",0.00300000000000011
+"project_restore",0.00199999999999889
+"workbook_export",0.0650000000000013
+"html_report",1.484

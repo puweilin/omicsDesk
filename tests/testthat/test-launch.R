@@ -19,11 +19,12 @@ test_that("a data_dir argument and pre-set variables win over the defaults", {
   env <- omicsDesk:::desk_env(data_dir = "/somewhere/else")
   expect_identical(env[["OMICSAPP_DATA_DIR"]], "/somewhere/else")
 
+  cache <- withr::local_tempdir()
   withr::local_envvar(OMICSAPP_DATA_DIR = "/preset/projects",
-                      OMICSCORE_GENESET_CACHE = "/preset/genesets")
+                      OMICSCORE_GENESET_CACHE = cache)
   env <- omicsDesk:::desk_env()
   expect_identical(env[["OMICSAPP_DATA_DIR"]], "/preset/projects")
-  expect_identical(env[["OMICSCORE_GENESET_CACHE"]], "/preset/genesets")
+  expect_identical(env[["OMICSCORE_GENESET_CACHE"]], cache)
 })
 
 test_that("a pandoc in the desk folder is offered to rmarkdown, unless the caller chose one", {

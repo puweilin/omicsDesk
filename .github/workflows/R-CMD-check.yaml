@@ -9,7 +9,7 @@ name: R-CMD-check
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/local-edition-refresh"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -27,9 +27,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Read pinned omicsApp revision
+        id: upstream
+        shell: bash
+        run: |
+          pinned_ref="$(sed -n 's/^Config\/omicsDesk\/UpstreamRef:[[:space:]]*//p' DESCRIPTION)"
+          test -n "$pinned_ref"
+          printf 'ref=%s\n' "$pinned_ref" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
         with:
           repository: puweilin/omicsApp
+          ref: ${{ steps.upstream.outputs.ref }}
           path: _deps/omicsApp
 
       - uses: r-lib/actions/setup-pandoc@v2
