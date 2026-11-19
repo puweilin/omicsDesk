@@ -212,6 +212,15 @@ geneset_status <- function() {
       cbind(organism = unname(DESK_GENESET_ORGANISMS[code]), st,
             stringsAsFactors = FALSE)
     })
+    extra <- setdiff(omicsCore::enrichment_species()$species, DESK_GENESET_ORGANISMS)
+    for (species in extra) {
+      present <- file.exists(file.path(desk_geneset_dir(),
+                              geneset_file_name(DESK_GENESET_DATABASES, species)))
+      if (any(present)) {
+        st <- omicsCore::geneset_cache_status(DESK_GENESET_DATABASES[present], organism = species)
+        rows[[length(rows) + 1L]] <- cbind(organism = species, st, stringsAsFactors = FALSE)
+      }
+    }
     do.call(rbind, rows)
   })
 }
@@ -271,7 +280,8 @@ import_geneset_cache <- function(path, quiet = FALSE) {
            " (expected <database>__<Organism>.qs2)", call. = FALSE)
     }
     database <- m[[2L]]
-    organism <- names(which(organism_token(DESK_GENESET_ORGANISMS) == m[[3L]]))
+    supported <- omicsCore::enrichment_species()$species
+    organism <- supported[organism_token(supported) == m[[3L]]]
     if (!database %in% DESK_GENESET_DATABASES || length(organism) != 1L) {
       stop("Unsupported database or organism in file name: ", name,
            call. = FALSE)
@@ -282,7 +292,7 @@ import_geneset_cache <- function(path, quiet = FALSE) {
            " (needs a gs_name column and a gene_symbol column)", call. = FALSE)
     }
     data.frame(file = name, database = database,
-               organism = unname(DESK_GENESET_ORGANISMS[organism]),
+               organism = unname(organism),
                n_sets = info$n_sets, gs_source = info$gs_source,
                stringsAsFactors = FALSE)
   })

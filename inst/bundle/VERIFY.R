@@ -37,15 +37,16 @@ run_desk_acceptance <- function(output_dir) {
                              metadata = metadata, feature_annot = features), workbook)
   input <- timed("import", omicsCore::read_omics(workbook, omics_type = "proteomics",
                                                   assay_type = "raw_intensity")$input)
+  input$source_path <- workbook
   normalized <- timed("vsn_normalization", omicsCore::normalize_omics(input, method = "vsn"))
   params <- list(missing_threshold = 0.5, impute_method = "min")
   qc <- timed("qc", do.call(omicsCore::run_qc, c(list(input = normalized), params)))
-  cleaned <- qc$results$cleaned_input
+  cleaned <- omicsCore::qc_cleaned_input(qc, normalized)
   stopifnot(nrow(cleaned$expr_mat) == n - 1L, !anyNA(cleaned$expr_mat),
             !genes[[1L]] %in% rownames(cleaned$expr_mat))
   project <- omicsCore::omics_project("omicsDesk acceptance", list(protein = normalized))
-  project <- omicsCore::set_preprocessing(project, "protein", cleaned, params)
-  effective <- omicsCore::effective_input(project, "protein")$input
+  project <- omicsCore::apply_qc(project, "protein", qc)
+  effective <- project$experiments$protein
   stopifnot(identical(effective$expr_mat, cleaned$expr_mat))
   diff <- timed("limma", omicsCore::run_diff(effective, method = "limma", analysis_type = "group",
                     group_col = "group", control_group = "A", case_group = "B"))
@@ -100,8 +101,11 @@ run_desk_acceptance <- function(output_dir) {
   omp <- file.path(output_dir, "acceptance.omp")
   timed("project_save", omicsCore::save_project(project, omp, overwrite = TRUE))
   restored <- timed("project_restore", omicsCore::load_project(omp))
-  stopifnot(identical(restored$experiments$protein$expr_mat, project$experiments$protein$expr_mat))
-  timed("workbook_export", omicsCore::export_workbook(project, file.path(output_dir, "results.xlsx"), overwrite = TRUE))
+  stopifnot(identical(restored$experiments$protein$expr_mat, project$experiments$protein$expr_mat),
+            identical(omicsCore::qc_baseline_input(restored, "protein")$expr_mat, normalized$expr_mat))
+  tables <- timed("table_export", omicsCore::export_bundle(diff, file.path(output_dir, "tables"),
+                                                          formats = c("xlsx", "tsv")))
+  stopifnot(all(file.exists(tables$path)))
   html <- file.path(output_dir, "report.html")
   timed("html_report", omicsCore::export_report(project, html, overwrite = TRUE))
   text <- paste(readLines(html, warn = FALSE), collapse = "\n")

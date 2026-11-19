@@ -23,7 +23,7 @@ test_that("the shipped database and organism lists match omicsCore's", {
   expect_setequal(omicsDesk:::DESK_GENESET_DATABASES,
                   getFromNamespace("SUPPORTED_ENRICH_DATABASES", "omicsCore"))
   aliases <- getFromNamespace("ORGANISM_ALIASES", "omicsCore")
-  expect_setequal(unname(omicsDesk:::DESK_GENESET_ORGANISMS), unique(unname(aliases)))
+  expect_true(all(unname(omicsDesk:::DESK_GENESET_ORGANISMS) %in% unique(unname(aliases))))
   expect_true(all(names(omicsDesk:::DESK_GENESET_ORGANISMS) %in% names(aliases)))
 })
 

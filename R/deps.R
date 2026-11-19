@@ -13,13 +13,15 @@
 
 DESK_BACKENDS <- list(
   engine        = c("omicsCore", "omicsApp"),
-  rnaseq        = c("DESeq2", "edgeR", "limma", "tximport", "GenomicFeatures"),
-  proteomics    = c("vsn", "pcaMethods", "impute", "imputeLCMD"),
-  enrichment    = c("clusterProfiler", "msigdbr", "fgsea", "GSVA", "enrichplot"),
+  rnaseq        = c("DESeq2", "edgeR", "SummarizedExperiment", "BiocParallel"),
+  proteomics    = c("limma", "vsn", "pcaMethods", "impute", "imputeLCMD"),
+  enrichment    = c("clusterProfiler", "msigdbr", "babelgene", "fgsea", "GSVA"),
   integration   = c("ActivePathways"),
-  visualization = c("ComplexHeatmap", "circlize", "ggrepel", "ggpubr", "plotly"),
+  visualization = c("ComplexHeatmap", "circlize", "ggrepel", "plotly", "ragg", "svglite"),
   report        = c("rmarkdown", "knitr"),
-  export        = c("writexl", "openxlsx", "readxl", "qs2")
+  export        = c("writexl", "openxlsx", "readxl", "qs2"),
+  io            = c("data.table"),
+  persistence   = c("openssl")
 )
 
 # One exported function per Import. R CMD check counts a `pkg::fn`
@@ -34,8 +36,13 @@ backend_entrypoints <- function() {
     DESeq2          = DESeq2::DESeq,
     edgeR           = edgeR::glmQLFit,
     limma           = limma::lmFit,
-    tximport        = tximport::tximport,
-    GenomicFeatures = GenomicFeatures::transcripts,
+    SummarizedExperiment = SummarizedExperiment::SummarizedExperiment,
+    BiocParallel    = BiocParallel::SerialParam,
+    data.table      = data.table::fread,
+    babelgene       = babelgene::orthologs,
+    openssl         = openssl::sha256,
+    ragg            = ragg::agg_png,
+    svglite         = svglite::svglite,
     vsn             = vsn::vsn2,
     pcaMethods      = pcaMethods::pca,
     impute          = impute::impute.knn,
@@ -44,12 +51,10 @@ backend_entrypoints <- function() {
     msigdbr         = msigdbr::msigdbr,
     fgsea           = fgsea::fgsea,
     GSVA            = GSVA::gsva,
-    enrichplot      = enrichplot::gseaplot2,
     ActivePathways  = ActivePathways::ActivePathways,
     ComplexHeatmap  = ComplexHeatmap::Heatmap,
     circlize        = circlize::colorRamp2,
     ggrepel         = ggrepel::geom_text_repel,
-    ggpubr          = ggpubr::ggarrange,
     plotly          = plotly::plot_ly,
     rmarkdown       = rmarkdown::render,
     knitr           = knitr::kable,

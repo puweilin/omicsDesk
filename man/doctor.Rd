@@ -15,7 +15,7 @@ same library. Costs a few seconds; set \code{FALSE} to skip.}
 \value{
 A \code{data.frame} of class \code{desk_doctor} with columns \code{check},
 \code{ok}, \code{required}, \code{detail}, \code{fix}. Rows with \code{required = FALSE}
-(LaTeX, for PDF reports) are informational.
+(optional PDF support or unrecorded source provenance) are informational.
 }
 \description{
 One row per thing the app needs, with what was found and, when it is

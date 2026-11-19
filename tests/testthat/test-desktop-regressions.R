@@ -113,3 +113,13 @@ test_that("integrity failures and platform mismatches stop before installation",
   expect_error(env$install_offline_bundle(bundle, lib = lib), "for this platform")
   expect_false(dir.exists(lib))
 })
+
+test_that("additional upstream species can be imported for offline use", {
+  local_desk_home()
+  incoming <- withr::local_tempdir()
+  path <- file.path(incoming, "hallmark__Rattus_norvegicus.qs2")
+  write_geneset_table(path)
+  imported <- import_geneset_cache(path, quiet = TRUE)
+  expect_equal(imported$organism, "Rattus norvegicus")
+  expect_true(file.exists(file.path(desk_paths()$genesets, basename(path))))
+})

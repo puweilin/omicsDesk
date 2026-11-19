@@ -2,8 +2,9 @@
 
 The offline, single-machine edition of [omicsApp](https://github.com/puweilin/omicsApp).
 
-**0.1.0** pins omicsApp/omicsCore to `392c877`, based on the tested
-`f3c2ff4` baseline plus the desktop offline, cache, report and recovery fixes.
+**0.2.0** uses the omicsApp/omicsCore **0.2.0** release baseline
+(`07f523b` on upstream main), with shared offline-cache, applied-QC and
+legacy-desktop compatibility fixes. `DESCRIPTION` pins the exact shared commit.
 The analysis engine and all seven views come from those shared packages.
 Each offline bundle records its exact source revision and file checksums.
 
@@ -28,7 +29,13 @@ omicsDesk::launch(workers = 1L)
 升级后重启 R。项目和自行导入的基因集会保留在 `~/omicsDesk`。
 默认使用独立 R 后台进程，支持 macOS；`workers = 0L` 沿用当前 future 设置。
 离线模式下，缺失或损坏的基因集会给出本地修复提示，不尝试下载。
-QC 页面需要点击 **Apply to downstream** 才会把清洗结果用于后续分析。
+QC 页面需要点击 **Apply to downstream** 才会把清洗结果用于后续分析；
+调整过滤阈值时仍从导入的原始层重新计算。0.1.0 项目中匹配原始层的已应用 QC 会自动迁移。
+
+0.2.0 同步了多组比较、多图层、更多导入格式、方向性富集、
+逐图 PNG/PDF/SVG 下载和新版项目签名。Excel 结果从 Differential 页面下载；
+Report 页面提供 HTML、R 脚本及脚本与数据压缩包。
+内置离线基因集仍为人和小鼠；其他物种可用相同命名格式导入本地缓存。
 
 可以用安装包内的 `Rscript VERIFY.R <测试输出目录>` 运行合成数据验收。
 该检查会实际执行分析、导出、项目保存与恢复，并在独立 R 进程重跑分析脚本。
@@ -52,7 +59,7 @@ that has never seen the internet.
 
 ## For users: install from a bundle
 
-A bundle is a zip named like `omicsDesk-0.1.0-R4.5-windows.zip`, built for
+A bundle is a zip named like `omicsDesk-0.2.0-R4.5-windows.zip`, built for
 one platform and one R minor version. Unzip it, then follow its
 `README.md`: install R of that minor version, run `INSTALL.R`, double-click
 the launcher. Nothing in the process uses the network.
@@ -105,10 +112,17 @@ monorepo beside this one:
 
 ```sh
 Rscript tools/prewarm_genesets.R                     # once per MSigDB release
-Rscript tools/build_bundle.R --omicsapp ../omicsApp  # -> dist/omicsDesk-<ver>-R<minor>-<platform>/ and .zip
-Rscript tools/build_bundle.R --omicsapp-ref 392c877eb3dc5b022db005966fa6bd48a6c20dfa     # the same, with omicsApp fetched from GitHub at that ref
+Rscript tools/build_bundle.R --omicsapp ../omicsApp --pandoc /path/to/official/pandoc  # -> dist/omicsDesk-<ver>-R<minor>-<platform>/ and .zip
+Rscript tools/build_bundle.R     # fetches the exact pinned commit from GitHub (after the shared branch is published)
 Rscript tools/verify_bundle.R dist/omicsDesk-<...>.zip --browser --output dist/verification
 ```
+
+Use an official standalone pandoc binary; macOS builds reject Homebrew-linked
+binaries because they cannot run on a clean offline machine.
+
+Local builds reject a dirty or different upstream revision and mismatched package
+versions. `--allow-unpinned` is an explicit development-only override.
+`doctor()` checks all three package versions and their recorded shared source.
 
 Every bundle's `BUNDLE` file records the omicsApp commit it was built
 from, so a bundle can always say which omicsCore and omicsApp it holds.
@@ -123,23 +137,19 @@ for an old R cannot be rebuilt later.
 
 omicsCore and omicsApp first, from the monorepo; then this package.
 
-```r
-devtools::install_local("../omicsApp/packages/omicsCore")
-devtools::install_local("../omicsApp/packages/omicsApp")
-devtools::install_local(".")
+```sh
+Rscript tools/install_local.R --omicsapp ../omicsApp
 ```
 
-Install the pushed desktop branch with pak; its `Remotes` fields pin both
-shared packages to the matching companion commit:
+This validates the clean pinned checkout, installs Core → App → Desk and records
+the source SHA in the installed shared packages. Dependencies must already be
+available; for a new machine use the complete offline bundle.
 
-```r
-pak::pak("puweilin/omicsDesk@codex/local-edition-refresh")
-```
-
-This update is on a separate branch. The remote omicsApp main branch has
-additional development beyond this tested baseline and needs a separate
-compatibility update before it can replace the pin. CI reads the same pinned
-revision from `DESCRIPTION`.
+Both working trees use `codex/unified-desktop-baseline`. The shared compatibility
+commit is local until that branch is pushed; use the local checkout or the
+verified bundle before publication. After both branches are published, the
+`Remotes` entries and CI resolve the same pinned commit. Updating only one of
+the three application packages is unsupported.
 
 ### Tests and CI
 

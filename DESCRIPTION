@@ -1,6 +1,6 @@
 Package: omicsDesk
 Title: Offline, Single-Machine Edition of omicsApp
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person("Weilin", "Pu", email = "puweilin@gmail.com", role = c("aut", "cre"))
 Description: Runs the omicsApp multi-omics analysis interface on one machine
@@ -18,20 +18,20 @@ RoxygenNote: 7.3.3
 Depends:
     R (>= 4.2)
 Imports:
-    omicsApp,
-    omicsCore,
+    omicsApp (>= 0.2.0),
+    omicsCore (>= 0.2.0),
     ActivePathways,
+    babelgene,
+    BiocParallel,
     circlize,
     clusterProfiler,
     ComplexHeatmap,
     DESeq2,
     edgeR,
-    enrichplot,
+    data.table,
     fgsea,
     future,
-    GenomicFeatures,
     ggrepel,
-    ggpubr,
     GSVA,
     impute,
     imputeLCMD,
@@ -40,18 +40,21 @@ Imports:
     limma,
     msigdbr,
     openxlsx,
+    openssl,
     pcaMethods,
     plotly,
     qs2,
+    ragg,
     readxl,
     rmarkdown,
-    tximport,
+    SummarizedExperiment,
+    svglite,
     vsn,
     writexl
 Remotes:
-    omicsCore=puweilin/omicsApp/packages/omicsCore@392c877eb3dc5b022db005966fa6bd48a6c20dfa,
-    omicsApp=puweilin/omicsApp/packages/omicsApp@392c877eb3dc5b022db005966fa6bd48a6c20dfa
-Config/omicsDesk/UpstreamRef: 392c877eb3dc5b022db005966fa6bd48a6c20dfa
+    omicsCore=puweilin/omicsApp/packages/omicsCore@30b310282e9e5ee07b8647dd8155234dafdeaabf,
+    omicsApp=puweilin/omicsApp/packages/omicsApp@30b310282e9e5ee07b8647dd8155234dafdeaabf
+Config/omicsDesk/UpstreamRef: 30b310282e9e5ee07b8647dd8155234dafdeaabf
 Suggests:
     testthat (>= 3.0.0),
     withr,

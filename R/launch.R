@@ -109,6 +109,8 @@ launch_banner <- function(env) {
   }
   message(
     "omicsDesk ", utils::packageVersion("omicsDesk"),
+    " / omicsApp ", utils::packageVersion("omicsApp"),
+    " / omicsCore ", utils::packageVersion("omicsCore"),
     "\n  projects:  ", env[["OMICSAPP_DATA_DIR"]],
     "\n  gene sets: ", geneset_vintage(env[["OMICSCORE_GENESET_CACHE"]]) %||% "none",
     "\n  reports:   ", pandoc,

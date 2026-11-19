@@ -10,12 +10,13 @@
 #   Rscript tools/build_bundle.R [--omicsapp <dir> | --omicsapp-ref <ref>] [--out <dir>]
 #                                [--pandoc <exe>] [--reuse-downloads] [--no-zip]
 #
-# --omicsapp      checkout of the omicsApp monorepo (default ../omicsApp when it exists)
+# --omicsapp      clean checkout matching the pinned omicsApp revision
 # --omicsapp-ref  fetch the monorepo from GitHub at this branch, tag or commit
-#                 instead (default main when there is no local checkout)
+#                 instead (defaults to the pinned revision in DESCRIPTION)
 # --out        output directory (default dist/)
 # --pandoc     pandoc executable to ship; default: the one rmarkdown finds
 # --reuse-downloads  skip pak if the download cache for this target exists
+# --allow-unpinned   explicitly permit a development build from another revision
 #
 # Needs: pak (to resolve and download), the R CMD build toolchain, and
 # network. inst/genesets must already be populated (tools/prewarm_genesets.R).
@@ -84,10 +85,7 @@ omicsapp_arg <- get_arg("--omicsapp", NULL)
 omicsapp_ref <- get_arg("--omicsapp-ref", NULL)
 if (!is.null(omicsapp_arg) && !is.null(omicsapp_ref)) stop("Pass --omicsapp or --omicsapp-ref, not both.")
 if (is.null(omicsapp_arg) && is.null(omicsapp_ref)) {
-  default_dir <- file.path(root, "..", "omicsApp")
-  if (dir.exists(default_dir)) omicsapp_arg <- default_dir else {
-    omicsapp_ref <- read.dcf(file.path(root, "DESCRIPTION"))[1L, "Config/omicsDesk/UpstreamRef"]
-  }
+  omicsapp_ref <- read.dcf(file.path(root, "DESCRIPTION"))[1L, "Config/omicsDesk/UpstreamRef"]
 }
 if (!is.null(omicsapp_arg)) {
   omicsapp_dir <- normalizePath(omicsapp_arg, mustWork = FALSE)
@@ -112,6 +110,9 @@ for (nm in names(pkg_dirs)) {
     stop("No package at ", pkg_dirs[[nm]], " (pass --omicsapp <monorepo checkout>)")
   }
 }
+source(file.path(root, "tools", "baseline.R"), local = TRUE)
+check_upstream_baseline(root, omicsapp_dir, omicsapp_sha,
+                        allow_unpinned = has_flag("--allow-unpinned"))
 if (length(list.files(file.path(root, "inst", "genesets"), pattern = "\\.qs2$")) == 0L) {
   stop("inst/genesets is empty; run tools/prewarm_genesets.R first.")
 }
@@ -314,8 +315,13 @@ if (is.null(pandoc_exe) || !nzchar(pandoc_exe)) pandoc_exe <- unname(Sys.which("
 pandoc_version <- ""
 if (nzchar(pandoc_exe) && file.exists(pandoc_exe)) {
   if (grepl("^/opt/homebrew|^/usr/local/Cellar", pandoc_exe)) {
-    message("  ! ", pandoc_exe, " is a Homebrew build, which links against Homebrew libraries;",
-            " pass --pandoc <official release binary> for a bundle that runs elsewhere.")
+    stop("Use --pandoc <official release binary>; a Homebrew pandoc is not portable.")
+  }
+  if (is_macos && nzchar(Sys.which("otool"))) {
+    linked <- system2("otool", c("-L", shQuote(pandoc_exe)), stdout = TRUE)
+    if (any(grepl("[[:space:]](/opt/homebrew|/usr/local)/", linked))) {
+      stop("Pandoc links to local libraries; use --pandoc <official release binary>.")
+    }
   }
   dir.create(file.path(bundle_dir, "pandoc"))
   file.copy(pandoc_exe, file.path(bundle_dir, "pandoc", basename(pandoc_exe)))

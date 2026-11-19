@@ -11,7 +11,7 @@
 #'
 #' @return A `data.frame` of class `desk_doctor` with columns `check`,
 #'   `ok`, `required`, `detail`, `fix`. Rows with `required = FALSE`
-#'   (LaTeX, for PDF reports) are informational.
+#'   (optional PDF support or unrecorded source provenance) are informational.
 #' @export
 #' @examples
 #' \dontrun{
@@ -55,16 +55,19 @@ doctor <- function(workers = TRUE, quiet = FALSE) {
         "run the bundle's INSTALL.R again, or omicsDesk::install_offline(<bundle>)")
   }
 
-  if (!is.null(bundle$OmicsAppSha) && nzchar(bundle$OmicsAppSha)) {
-    source <- vapply(c("omicsCore", "omicsApp"), function(pkg) {
-      value <- utils::packageDescription(pkg, fields = "Config/omicsDesk/SourceSHA")
-      if (length(value) != 1L || is.na(value)) "unrecorded" else gsub("[[:space:]]+", " ", trimws(value))
-    }, character(1))
-    ref <- gsub("[[:space:]]+", " ", trimws(bundle$OmicsAppSha))
-    add("upstream source", all(source == ref),
-        paste(names(source), source, collapse = "; "),
-        "reinstall this bundle and restart R so the matching packages are loaded")
-  }
+  versions <- vapply(c("omicsDesk", "omicsCore", "omicsApp"), pkg_version_or_na, character(1))
+  add("version baseline", !anyNA(versions) && length(unique(versions)) == 1L,
+      paste(names(versions), versions, collapse = "; "),
+      "install all three application packages from the same bundle and restart R")
+  source <- vapply(c("omicsCore", "omicsApp"), package_source_sha, character(1))
+  ref <- utils::packageDescription("omicsDesk", fields = "Config/omicsDesk/UpstreamRef")
+  if (!is.null(bundle$OmicsAppSha) && nzchar(bundle$OmicsAppSha)) ref <- bundle$OmicsAppSha
+  ref <- gsub("[[:space:]]+", " ", trimws(ref))
+  recorded <- all(!is.na(source))
+  add("upstream source", recorded && all(source == ref),
+      paste(names(source), ifelse(is.na(source), "unrecorded", source), collapse = "; "),
+      "reinstall this bundle and restart R to verify the exact shared source revision",
+      required = recorded || !is.null(bundle$OmicsAppSha))
 
   # ---- gene sets --------------------------------------------------------
   sync <- tryCatch(sync_geneset_cache(quiet = TRUE), error = function(e) NULL)
@@ -104,10 +107,10 @@ doctor <- function(workers = TRUE, quiet = FALSE) {
   add("HTML reports", pandoc$ok, pandoc$detail,
       sprintf("copy the bundle's pandoc/ folder to %s", desk_pandoc_dir()))
 
-  pdf <- omicsCore::pdf_toolchain_status()
-  add("PDF reports", pdf$ok,
-      if (isTRUE(pdf$ok)) paste(pdf$engine, "with", pdf$cjk_font) else pdf$message,
-      "install XeLaTeX and a CJK font, or print the HTML report to PDF from the browser",
+  latex <- unname(Sys.which("pdflatex"))
+  add("PDF reports", nzchar(latex),
+      if (nzchar(latex)) latex else "pdflatex not found; use the HTML report",
+      "install LaTeX, or print the HTML report to PDF from the browser",
       required = FALSE)
 
   # ---- data folder --------------------------------------------------------
@@ -135,6 +138,14 @@ doctor <- function(workers = TRUE, quiet = FALSE) {
   class(out) <- c("desk_doctor", class(out))
   if (!quiet) print(out)
   invisible(out)
+}
+
+package_source_sha <- function(pkg) {
+  desc <- suppressWarnings(utils::packageDescription(pkg))
+  if (!is.list(desc)) return(NA_character_)
+  value <- desc[["Config/omicsDesk/SourceSHA"]] %||% desc[["RemoteSha"]]
+  if (is.null(value) || length(value) != 1L || is.na(value)) return(NA_character_)
+  gsub("[[:space:]]+", " ", trimws(value))
 }
 
 check_worker <- function() {
