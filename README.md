@@ -1,202 +1,111 @@
 # omicsDesk
 
-The offline, single-machine edition of [omicsApp](https://github.com/puweilin/omicsApp).
+[omicsApp](https://github.com/puweilin/omicsApp) 的本地单机版，用于蛋白组、RNA-seq 等组学数据分析。在自己的电脑上运行，通过浏览器操作，项目保存在本地。
 
-**0.2.0** uses the omicsApp/omicsCore **0.2.0** release baseline
-(`07f523b` on upstream main), with shared offline-cache, applied-QC and
-legacy-desktop compatibility fixes. `DESCRIPTION` pins the exact shared commit.
-The analysis engine and all seven views come from those shared packages.
-Each offline bundle records its exact source revision and file checksums.
+**可以直接通过 `remotes::install_github()` 或 `devtools::install_github()` 安装。安装完成后，默认离线运行。** 完全无法联网的电脑可以使用完整离线安装包。
 
-### 本地版快速开始
+当前版本为 **0.2.0**，与 omicsApp、omicsCore 共用分析引擎和界面；匹配的源码版本已记录在 [DESCRIPTION](DESCRIPTION) 中。
 
-下载与操作系统、CPU 架构及 R 小版本匹配的 ZIP，解压后执行：
+## 1. 联网安装
+
+需要 R 4.2 或更新版本。在 **R 或 RStudio 控制台**中运行：
+
+```r
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+install.packages(c("remotes", "BiocManager"))
+
+remotes::install_github(
+  "puweilin/omicsDesk",
+  ref = "main",
+  repos = BiocManager::repositories(),
+  upgrade = "always"
+)
+```
+
+这会安装 omicsDesk、匹配的 omicsApp / omicsCore，以及所需分析依赖。首次安装下载量较大，请保持联网。
+
+- 已有 `devtools`：可将上面的 `remotes::install_github()` 换成 [`devtools::install_github()`](https://devtools.r-lib.org/reference/remote-reexports.html)，参数相同。
+- 保留 `repos = BiocManager::repositories()`：DESeq2、GSVA 等依赖来自 Bioconductor，需要同时配置 [Bioconductor 和 CRAN 软件源](https://bioconductor.github.io/BiocManager/reference/repositories.html)。
+- `upgrade = "always"` 会更新过旧的依赖，包括旧版 omicsApp / omicsCore，避免混用版本。详见 [remotes 安装参数](https://remotes.r-lib.org/reference/install_github.html)。
+
+## 2. 启动和使用
+
+安装或升级后，**先重启 R**，再运行：
+
+```r
+omicsDesk::doctor()  # 检查依赖、基因集和报告工具
+omicsDesk::launch()  # 启动界面
+```
+
+界面会在浏览器中打开，使用期间保持 R 会话运行。以后启动只需执行 `omicsDesk::launch()`。
+
+基本流程：
+
+1. 导入数据并设置分组。
+2. 在 QC 页面检查、过滤数据；点击 **Apply to downstream**，将清洗结果应用到后续分析。
+3. 进行差异分析、富集分析或多组学整合。
+4. 下载结果：各图支持 PNG / PDF / SVG，Differential 页面可下载 Excel，Report 页面可下载 HTML 报告、R 脚本及脚本与数据压缩包。
+
+项目默认保存在 `~/omicsDesk/projects`，基因集保存在 `~/omicsDesk/genesets`。查看本机的实际目录：
+
+```r
+omicsDesk::desk_paths()
+```
+
+升级软件会保留该目录中的项目和自行导入的基因集。内置基因集覆盖人和小鼠，可在离线状态下使用。
+
+## 3. 完全离线的电脑如何安装
+
+准备与目标电脑的 **操作系统、CPU 架构和 R 小版本**匹配的完整离线 ZIP。安装包包含 R 包及其依赖、安装脚本和启动器；目标电脑需要先安装对应版本的 R。
+
+例如，文件名中的 `R4.4-macos-arm64` 表示适用于 R 4.4.x 和 Apple Silicon Mac。
+
+解压 ZIP，在**终端或命令提示符**中进入解压目录，执行：
 
 ```sh
 Rscript INSTALL.R
 Rscript START.R
 ```
 
-也可以在 R 中使用：
+也可以按安装包内的 `README.md` 操作。安装完成后，在 R 中同样可以用 `omicsDesk::launch()` 启动。
+
+## 4. 常见问题
+
+### 安装时出现 `401 Bad credentials`
+
+通常是 R 读取到了失效的 GitHub 凭据。可以在 R 控制台运行下面的命令，按提示更新自己的 GitHub token：
 
 ```r
-omicsDesk::doctor()
-omicsDesk::launch()
-# 较小内存的电脑可以减少后台进程：
+install.packages("gitcreds")
+gitcreds::gitcreds_set()
+```
+
+如果 `.Renviron` 中还设置了旧的 `GITHUB_PAT` 或 `GITHUB_TOKEN`，也需要更新或移除旧值，重启 R 后重新安装。参见 [gitcreds 凭据设置说明](https://gitcreds.r-lib.org/reference/gitcreds_get.html)。
+
+### 提示找不到 DESeq2、GSVA 等依赖
+
+先确认使用了上面的完整安装命令，尤其是 `repos = BiocManager::repositories()`。如果日志提示依赖不支持当前 R 版本，需要使用兼容的 R / Bioconductor 版本。
+
+### 能分析，但不能导出 HTML 报告
+
+先运行 `omicsDesk::doctor()`。如果提示找不到 Pandoc，请按 [Pandoc 官方安装说明](https://pandoc.org/installing.html) 安装后重启 R。GitHub 安装主要安装 R 包，Pandoc 需要本机另行提供。
+
+### 电脑内存较小
+
+减少后台 R 进程数量：
+
+```r
 omicsDesk::launch(workers = 1L)
 ```
 
-升级后重启 R。项目和自行导入的基因集会保留在 `~/omicsDesk`。
-默认使用独立 R 后台进程，支持 macOS；`workers = 0L` 沿用当前 future 设置。
-离线模式下，缺失或损坏的基因集会给出本地修复提示，不尝试下载。
-QC 页面需要点击 **Apply to downstream** 才会把清洗结果用于后续分析；
-调整过滤阈值时仍从导入的原始层重新计算。0.1.0 项目中匹配原始层的已应用 QC 会自动迁移。
+### 如何升级
 
-0.2.0 同步了多组比较、多图层、更多导入格式、方向性富集、
-逐图 PNG/PDF/SVG 下载和新版项目签名。Excel 结果从 Differential 页面下载；
-Report 页面提供 HTML、R 脚本及脚本与数据压缩包。
-内置离线基因集仍为人和小鼠；其他物种可用相同命名格式导入本地缓存。
+重新执行“联网安装”中的命令，重启 R，再运行 `omicsDesk::doctor()`。如果提示版本不一致，但安装器跳过了安装，可在 `install_github()` 中加上 `force = TRUE` 重装。离线电脑使用匹配的新版本完整安装包升级。
 
-可以用安装包内的 `Rscript VERIFY.R <测试输出目录>` 运行合成数据验收。
-该检查会实际执行分析、导出、项目保存与恢复，并在独立 R 进程重跑分析脚本。
+## 更多说明
 
-omicsCore and omicsApp assume a machine that can reach CRAN and
-Bioconductor: analysis engines are optional packages installed on first
-use, and the MSigDB gene sets come from `msigdbr`, which on current
-versions downloads them. omicsDesk removes both assumptions. It depends
-on every engine the app can call, ships the gene-set tables, starts the
-app with its files in one folder that persists between sessions, and
-comes with the tooling that builds an installable bundle for a machine
-that has never seen the internet.
+- [开发与维护](docs/development.md)：本地源码安装、离线包构建与验证、基因集导入导出。
+- [0.2.0 验证记录](docs/validation/2026-11-19/README.md)：测试范围和结果。
+- [更新记录](NEWS.md) · [问题反馈](https://github.com/puweilin/omicsDesk/issues)
 
-| Function | What it does |
-|---|---|
-| `launch()` | starts the app: projects in `~/omicsDesk/projects`, gene sets from `~/omicsDesk/genesets`, no auto-refresh, the bundled pandoc for HTML reports |
-| `doctor()` | one row per thing the app needs, with what was found and how to fix what was not |
-| `install_offline()` | installs the whole stack from a bundle |
-| `geneset_status()`, `import_geneset_cache()`, `export_geneset_cache()` | see, bring in, and pass on gene-set tables |
-| `desk_home()`, `desk_paths()` | where the files are |
-
-## For users: install from a bundle
-
-A bundle is a zip named like `omicsDesk-0.2.0-R4.5-windows.zip`, built for
-one platform and one R minor version. Unzip it, then follow its
-`README.md`: install R of that minor version, run `INSTALL.R`, double-click
-the launcher. Nothing in the process uses the network.
-
-```r
-omicsDesk::doctor()   # after installing: is everything here?
-omicsDesk::launch()   # start the app
-```
-
-Your projects, gene-set tables and the report renderer live in
-`~/omicsDesk` (`Documents\omicsDesk` on Windows). Set `OMICSDESK_HOME`
-to put them elsewhere.
-
-### Refreshing gene sets without a network
-
-The shipped tables are MSigDB's; the `kegg` table is MSigDB's frozen
-`KEGG_LEGACY` collection. To use current KEGG pathways, a colleague with
-network access runs, in a session with omicsDesk installed:
-
-```r
-omicsDesk::launch(online = TRUE)              # or just:
-omicsCore::refresh_geneset_cache("kegg")      # with OMICSCORE_GENESET_CACHE = desk_paths()$genesets
-omicsDesk::export_geneset_cache("D:/genesets", include_kegg_live = TRUE)
-```
-
-and the offline user runs `omicsDesk::import_geneset_cache("D:/genesets")`.
-KEGG's licence allows this for your own use only; `export_geneset_cache()`
-leaves live-KEGG tables out unless told otherwise.
-
-## For developers
-
-### Layout
-
-```
-R/            launch(), doctor(), install_offline(), the gene-set helpers
-inst/genesets 14 MSigDB tables (7.5 MB) + MANIFEST.json, built by tools/prewarm_genesets.R
-inst/bundle   INSTALL.R, START.R, launchers, README template: copied into every bundle
-tools/        prewarm_genesets.R, build_bundle.R, verify_bundle.R
-docs/         the plan this repository implements
-```
-
-omicsDesk is a distribution layer. Analysis and UI code stay in the
-monorepo; this package only depends on them, promotes their optional
-engines to hard dependencies, and adds what an offline laptop needs.
-
-### Building a bundle
-
-On a machine with network access, with a checkout of the omicsApp
-monorepo beside this one:
-
-```sh
-Rscript tools/prewarm_genesets.R                     # once per MSigDB release
-Rscript tools/build_bundle.R --omicsapp ../omicsApp --pandoc /path/to/official/pandoc  # -> dist/omicsDesk-<ver>-R<minor>-<platform>/ and .zip
-Rscript tools/build_bundle.R     # fetches the exact pinned commit from GitHub (after the shared branch is published)
-Rscript tools/verify_bundle.R dist/omicsDesk-<...>.zip --browser --output dist/verification
-```
-
-Use an official standalone pandoc binary; macOS builds reject Homebrew-linked
-binaries because they cannot run on a clean offline machine.
-
-Local builds reject a dirty or different upstream revision and mismatched package
-versions. `--allow-unpinned` is an explicit development-only override.
-`doctor()` checks all three package versions and their recorded shared source.
-
-Every bundle's `BUNDLE` file records the omicsApp commit it was built
-from, so a bundle can always say which omicsCore and omicsApp it holds.
-
-A bundle is built for the platform and R minor version the script runs
-under; the `bundle` workflow builds Windows, macOS (arm64 and x86_64)
-and Linux ones on a version tag. Bioconductor publishes binaries only
-for its current and previous release, so keep the artifacts: a bundle
-for an old R cannot be rebuilt later.
-
-### Installing from source
-
-omicsCore and omicsApp first, from the monorepo; then this package.
-
-```sh
-Rscript tools/install_local.R --omicsapp ../omicsApp
-```
-
-This validates the clean pinned checkout, installs Core → App → Desk and records
-the source SHA in the installed shared packages. Dependencies must already be
-available; for a new machine use the complete offline bundle.
-
-Both working trees use `codex/unified-desktop-baseline`. The shared compatibility
-commit is local until that branch is pushed; use the local checkout or the
-verified bundle before publication. After both branches are published, the
-`Remotes` entries and CI resolve the same pinned commit. Updating only one of
-the three application packages is unsupported.
-
-### Tests and CI
-
-```sh
-Rscript -e 'devtools::test()'
-```
-
-`tools/verify_bundle.R` checks the **final ZIP**, installs every package in a
-fresh library, validates checksums and upstream provenance, and runs real
-proteomics/RNA-seq, enrichment, integration, persistence and export checks.
-`--browser` additionally requires `callr`, `shinytest2`, `chromote` and Chrome;
-it launches `omicsDesk::launch()` with real background workers, exercises
-upload → VSN → apply QC → differential → enrichment → downloads, then restarts
-and checks recovery. Proxy blackholing is used for these checks; this is not an
-operating-system network sandbox.
-
-The suite covers the environment `launch()` sets, the copy-and-never-
-overwrite rule for gene-set tables, import and export, `doctor()` with
-engines mocked away, and `install_offline()` against a real one-package
-bundle built during the test. CI checks out the omicsApp monorepo beside
-this one; both repositories are public, so no secret is involved.
-
-## Gene sets and licences
-
-`inst/genesets` holds MSigDB collections for human and mouse (Hallmark,
-Reactome, WikiPathways, GO BP/MF/CC, and the frozen `KEGG_LEGACY` set),
-taken from the `msigdbr` package and redistributed as it does, under
-[MSigDB's licence terms](https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp).
-`inst/genesets/MANIFEST.json` records the MSigDB release and msigdbr
-version they came from. Tables fetched live from the KEGG REST API by
-`omicsCore::refresh_geneset_cache()` are for local use only under KEGG's
-licence: they are never part of this package or a bundle, and
-`export_geneset_cache()` leaves them out unless told otherwise.
-
-## 中文快速开始
-
-omicsDesk 是 omicsApp 的单机离线版：把所有分析引擎变成硬依赖、随包附带
-MSigDB 基因集、把项目文件放在 `~/omicsDesk`（Windows 为 `文档\omicsDesk`），
-并提供把整套依赖打包成离线安装包的工具。
-
-用户：解压对应平台和 R 版本的 `omicsDesk-<版本>-R<x.y>-<平台>.zip`，按其中的
-`README.md` 安装 R、运行 `INSTALL.R`、双击启动器。之后在 R 里用
-`omicsDesk::doctor()` 自检，`omicsDesk::launch()` 启动。
-
-开发者：先从 monorepo 安装 omicsCore 和 omicsApp，再安装本包；用
-`tools/build_bundle.R` 生成离线包，`tools/verify_bundle.R` 在断网条件下验证。
-
-## License
-
-MIT (c) 2026 Weilin Pu.
+代码采用 [MIT 许可](LICENSE.md)，© 2026 Weilin Pu。内置基因集遵循 [MSigDB 许可](https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp)，来源版本记录在 [MANIFEST.json](inst/genesets/MANIFEST.json) 中。内置 KEGG 表为 `KEGG_LEGACY` 集合；在线获取的 KEGG 数据不随本包分发。
