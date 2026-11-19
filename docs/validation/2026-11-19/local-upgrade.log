@@ -1,0 +1,39 @@
+* installing *source* package ‘omicsCore’ ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (omicsCore)
+* installing *source* package ‘omicsApp’ ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (omicsApp)
+* installing *source* package ‘omicsDesk’ ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (omicsDesk)
+Installed omicsDesk, omicsApp and omicsCore at 30b310282e9e5ee07b8647dd8155234dafdeaabf
+Library: /Users/puweilin/Library/R/arm64/4.4/library
+Restart R, then run omicsDesk::doctor() and omicsDesk::launch().

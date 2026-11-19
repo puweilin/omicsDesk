@@ -1,0 +1,49 @@
+
+backends: .....................
+baseline: .......
+bundle-contract: ................................................
+desktop-regressions: ......................................
+doctor: .....................
+env: .......
+genesets: .......................................Imported kegg__Mus_musculus.qs2: 5 gene sets (KEGG REST 2026-02-02)
+.................
+install: Installing 1 of 1 packages
+  from /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad5080bd5f/离线安装 bundle with spaces #1 (test)/bundle/repo
+  into /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad5080bd5f/离线安装 bundle with spaces #1 (test)/lib
+  1 source packages
+.......
+omicsDesk 0.0.0.9000 is installed.
+  library: /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad5080bd5f/离线安装 bundle with spaces #1 (test)/lib
+  folder:  /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T//RtmptFWJr3/fileddad5b079bb9
+
+Restart R after an upgrade. Then run omicsDesk::doctor() and omicsDesk::launch().
+(or double-click the launcher next to this script).
+...Installing 1 of 1 packages
+  from /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad72ffbd14/bundle/repo
+  into /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad72ffbd14/lib
+  1 source packages
+
+omicsDesk 0.0.0.9000 is installed.
+  library: /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad72ffbd14/lib
+  folder:  /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T//RtmptFWJr3/fileddad1e8dda6f
+
+Restart R after an upgrade. Then run omicsDesk::doctor() and omicsDesk::launch().
+(or double-click the launcher next to this script).
+Installing 1 of 1 packages
+  from /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad72ffbd14/bundle/repo
+  into /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad72ffbd14/lib
+  1 source packages
+
+omicsDesk 0.0.0.9000 is installed.
+  library: /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/RtmptFWJr3/fileddad72ffbd14/lib
+  folder:  /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T//RtmptFWJr3/fileddad1e8dda6f
+
+Restart R after an upgrade. Then run omicsDesk::doctor() and omicsDesk::launch().
+(or double-click the launcher next to this script).
+..
+launch: ......................
+paths: ..........
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+ failed   error warning skipped  passed 
+      0       0       0       0     242 

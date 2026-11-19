@@ -1,0 +1,24 @@
+
+[ok] R version            R version 4.4.3 (2025-02-28)
+[ok] packages: engine     omicsCore 0.2.0, omicsApp 0.2.0
+[ok] packages: rnaseq     DESeq2 1.46.0, edgeR 4.4.2, SummarizedExperiment 1.36.0, BiocParallel 1.40.2
+[ok] packages: proteomics limma 3.62.2, vsn 3.74.0, pcaMethods 1.98.0, impute 1.80.0, imputeLCMD 2.1
+[ok] packages: enrichment clusterProfiler 4.14.6, msigdbr 26.1.1, babelgene 22.9, fgsea 1.32.4, GSVA 2.0.7
+[ok] packages: integration ActivePathways 2.0.6
+[ok] packages: visualization ComplexHeatmap 2.22.0, circlize 0.4.17, ggrepel 0.9.8, plotly 4.12.0, ragg 1.5.0, svglite 2.1.3
+[ok] packages: report     rmarkdown 2.30, knitr 1.51
+[ok] packages: export     writexl 1.5.4, openxlsx 4.2.8.1, readxl 1.4.5, qs2 0.1.7
+[ok] packages: io         data.table 1.18.2.1
+[ok] packages: persistence openssl 2.3.5
+[ok] version baseline     omicsDesk 0.2.0; omicsCore 0.2.0; omicsApp 0.2.0
+[ok] upstream source      omicsCore 30b310282e9e5ee07b8647dd8155234dafdeaabf; omicsApp 30b310282e9e5ee07b8647dd8155234dafdeaabf
+[ok] gene sets            14 of 14 tables readable in /Users/puweilin/omicsDesk/genesets; MSigDB 2025.1 (msigdbr 25.1.1, built 2026-09-05)
+[ok] HTML reports         pandoc 3.9 at /opt/homebrew/bin/pandoc
+[ok] PDF reports          /Library/TeX/texbin/pdflatex
+[ok] projects folder      /Users/puweilin/omicsDesk/projects
+[ok] background worker    worker 60247 sees /Users/puweilin/Library/R/arm64/4.4/library
+
+Everything omicsDesk needs is here.
+omicsDesk 0.2.0 /Users/puweilin/Library/R/arm64/4.4/library/omicsDesk 
+omicsCore 0.2.0 /Users/puweilin/Library/R/arm64/4.4/library/omicsCore 
+omicsApp 0.2.0 /Users/puweilin/Library/R/arm64/4.4/library/omicsApp 

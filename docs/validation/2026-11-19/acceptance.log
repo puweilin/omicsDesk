@@ -1,0 +1,51 @@
+
+[ok] R version            R version 4.4.3 (2025-02-28)
+[ok] packages: engine     omicsCore 0.2.0, omicsApp 0.2.0
+[ok] packages: rnaseq     DESeq2 1.46.0, edgeR 4.4.2, SummarizedExperiment 1.36.0, BiocParallel 1.40.2
+[ok] packages: proteomics limma 3.62.2, vsn 3.74.0, pcaMethods 1.98.0, impute 1.80.0, imputeLCMD 2.1
+[ok] packages: enrichment clusterProfiler 4.14.6, msigdbr 26.1.0, babelgene 22.9, fgsea 1.32.4, GSVA 2.0.7
+[ok] packages: integration ActivePathways 2.0.6
+[ok] packages: visualization ComplexHeatmap 2.22.0, circlize 0.4.17, ggrepel 0.9.8, plotly 4.12.0, ragg 1.5.1, svglite 2.2.2
+[ok] packages: report     rmarkdown 2.30, knitr 1.51
+[ok] packages: export     writexl 1.5.4, openxlsx 4.2.8.1, readxl 1.4.5, qs2 0.1.7
+[ok] packages: io         data.table 1.18.2.1
+[ok] packages: persistence openssl 2.3.5
+[ok] version baseline     omicsDesk 0.2.0; omicsCore 0.2.0; omicsApp 0.2.0
+[ok] upstream source      omicsCore 30b310282e9e5ee07b8647dd8155234dafdeaabf; omicsApp 30b310282e9e5ee07b8647dd8155234dafdeaabf
+[ok] gene sets            14 of 14 tables readable in /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-e56d1c49b958/home/genesets; MSigDB 2025.1 (msigdbr 25.1.1, built 2026-09-05)
+[ok] HTML reports         pandoc 3.14 at /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-e56d1c49b958/home/pandoc/pandoc
+[ok] PDF reports          /Library/TeX/texbin/pdflatex
+[ok] projects folder      /var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-e56d1c49b958/home/projects
+[ok] background worker    worker 59849 sees /private/var/folders/mm/yfrhv9112zzgrb356kyq3gzr0000gn/T/omicsDesk-verify-e56d1c49b958/library
+
+Everything omicsDesk needs is here.
+PASS import
+Normalized 300 features x 12 samples with vsn
+PASS vsn_normalization
+PASS qc
+PASS limma
+PASS script_replay_fresh_process
+PASS ora
+using 'fgsea' for GSEA analysis, please cite Korotkevich et al (2019).
+
+preparing geneSet collections...
+GSEA analysis...
+leading edge analysis...
+done...
+PASS gsea
+PASS gsva
+PASS edger
+converting counts to integer mode
+PASS deseq2
+PASS integration
+PASS project_save
+PASS project_restore
+PASS table_export
+PASS html_report
+ACCEPTANCE OK: /Users/puweilin/SciProject/CHISSS/omicsDesk/dist/validation-0.2.0/final-zip
+Warning messages:
+1: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
+  For some of the pathways the P-values were likely overestimated. For such pathways log2err is set to NA.
+2: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
+  For some pathways, in reality P-values are less than 1e-10. You can set the `eps` argument to zero for better estimation.
+BUNDLE OK

@@ -1,0 +1,12 @@
+  omicsApp from local checkout /Users/puweilin/SciProject/CHISSS/omicsDesk/_deps/baseline-0.2.0 (30b310282e9e5ee07b8647dd8155234dafdeaabf)
+Building omicsDesk-0.2.0-R4.4-macos-arm64
+  R CMD build omicsCore
+  R CMD build omicsApp
+  R CMD build omicsDesk
+  47 direct dependencies; resolving the closure with pak
+  reusing /Users/puweilin/SciProject/CHISSS/omicsDesk/dist/downloads/R4.4-macos-arm64
+  269 binaries, 2 source-only
+  pandoc 3.14 from dist/tools/pandoc-3.14-arm64/bin/pandoc
+  274 packages, 674 MB unpacked
+  /Users/puweilin/SciProject/CHISSS/omicsDesk/dist/omicsDesk-0.2.0-R4.4-macos-arm64.zip (522 MB)
+Done: /Users/puweilin/SciProject/CHISSS/omicsDesk/dist/omicsDesk-0.2.0-R4.4-macos-arm64

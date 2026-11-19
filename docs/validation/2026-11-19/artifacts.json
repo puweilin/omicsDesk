@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-19",
+  "upstream_main": "07f523b196e67a98969096097ce9a8bee87f01fb",
+  "shared_commit": "30b310282e9e5ee07b8647dd8155234dafdeaabf",
+  "desk_build_commit": "284c55edb19c6d6c2e911a890cb6cfacd9fddfd6",
+  "platform": "macOS arm64 / R 4.4.3",
+  "files": [
+    {
+      "path": "dist/omicsDesk-0.2.0-R4.4-macos-arm64.zip",
+      "size_bytes": 547852941,
+      "sha256": "a1f15bd5e452b025222053359eac752170c5701b434ed9f86bbd0b0add3e7485"
+    },
+    {
+      "path": "dist/omicsDesk-0.2.0-R4.4-macos-arm64/repo/src/contrib/omicsApp_0.2.0.tar.gz",
+      "size_bytes": 317972,
+      "sha256": "9a16482e9c25b2c45f8918c7982b76299262383cd8161c6aec9496b29ba8ec6a"
+    },
+    {
+      "path": "dist/omicsDesk-0.2.0-R4.4-macos-arm64/repo/src/contrib/omicsCore_0.2.0.tar.gz",
+      "size_bytes": 793607,
+      "sha256": "a8a43354d12db084a3e4daf39d6bb8b258c472375b3e54e6e72dd84dd7c5c94e"
+    },
+    {
+      "path": "dist/omicsDesk-0.2.0-R4.4-macos-arm64/repo/src/contrib/omicsDesk_0.2.0.tar.gz",
+      "size_bytes": 7930973,
+      "sha256": "8cc7f98d7e4c94517b7811e7164d33ff6ded12c00f6eee5dd8be060c14b981cd"
+    }
+  ]
+}
